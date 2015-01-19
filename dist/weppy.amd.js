@@ -2,11 +2,7 @@
 define(["require", "exports"], function (require, exports) {
     var WeppyImpl;
     (function (WeppyImpl) {
-        var PROTOCOL_VERSION = 3;
-        var PATH_DELIMITER = '.';
-        var NAMESPACE_DELIMITER = '::';
-        var active = false;
-        var options = {
+        var PROTOCOL_VERSION = 3, PATH_DELIMITER = '.', NAMESPACE_DELIMITER = '::', active = false, options = {
             "host": '/weppy',
             "transport": 'url',
             "active": false,
@@ -16,27 +12,23 @@ define(["require", "exports"], function (require, exports) {
             "decimalPrecision": 3,
             "page": 'index',
             "context": {}
-        };
-        var initTime = +(new Date);
-        var now = window.performance && window.performance.now ? window.performance.now : function () {
+        }, initTime = +(new Date), queue, aggregationTimeout, maxTimeout, sentPerformanceData, now = window.performance && window.performance.now ? window.performance.now : function () {
             return +(new Date);
+        }, log = window.console && window.console.log && window.console.log.apply ? window.console.log : function () {
+        }, logError = window.console && window.console.error && window.console.error.apply ? window.console.error : function () {
         };
-        var log = window.console && window.console.log && window.console.log.apply ? window.console.log : function () {
-        };
-        var logError = window.console && window.console.error && window.console.error.apply ? window.console.error : function () {
-        };
-        var round = function (num, precision) {
+        function round(num, precision) {
             if (precision === void 0) { precision = options.decimalPrecision; }
             return Math.round(num * Math.pow(10, precision)) / Math.pow(10, precision);
-        };
-        var buildPath = function (path, subpath, glue) {
+        }
+        function buildPath(path, subpath, glue) {
             if (glue === void 0) { glue = PATH_DELIMITER; }
             return path + (path != '' && subpath != '' ? glue : '') + subpath;
-        };
-        var updateActive = function () {
+        }
+        function updateActive() {
             active = options.active && Math.random() < options.sample;
-        };
-        var extend = function (first, second) {
+        }
+        function extend(first, second) {
             if (first && second) {
                 for (var key in second) {
                     if (second.hasOwnProperty(key)) {
@@ -45,14 +37,14 @@ define(["require", "exports"], function (require, exports) {
                 }
             }
             return first || second;
-        };
-        var sortedJson = function (obj) {
+        }
+        function sortedJson(obj) {
             var keys = Object.keys(obj).sort(), i, ret = {};
             for (i = 0; i < keys.length; i++) {
                 ret[keys[i]] = obj[keys[i]];
             }
             return JSON.stringify(ret);
-        };
+        }
         (function (MetricType) {
             MetricType[MetricType["Counter"] = 0] = "Counter";
             MetricType[MetricType["Gauge"] = 1] = "Gauge";
@@ -128,7 +120,7 @@ define(["require", "exports"], function (require, exports) {
             };
             return Queue;
         })();
-        var queue = new Queue();
+        queue = new Queue();
         function enqueue(type, name, value, annotations) {
             if (!active) {
                 return;
@@ -137,7 +129,6 @@ define(["require", "exports"], function (require, exports) {
             queue.add(name, value, rollingAverage, annotations);
             scheduleSending();
         }
-        var aggregationTimeout, maxTimeout;
         function scheduleSending() {
             clearTimeout(aggregationTimeout);
             aggregationTimeout = setTimeout(sendQueue, options.aggregationInterval);
@@ -203,7 +194,6 @@ define(["require", "exports"], function (require, exports) {
             req.send(data);
             return req;
         }
-        var sentPerformanceData;
         var Namespace = (function () {
             function Namespace(_root, _path) {
                 this._root = _root;

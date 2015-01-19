@@ -8,38 +8,45 @@ interface Window {
 }
 
 module WeppyImpl {
-    var PROTOCOL_VERSION = 3;
 
-    var PATH_DELIMITER = '.';
-    var NAMESPACE_DELIMITER = '::';
-    var active = false;
-    var options : WeppySettings = {
-        "host": '/weppy',
-        "transport": 'url', // 'url' or 'post'
-        "active": false,
-        "sample": 1,
-        "aggregationInterval": 1000,
-        "maxInterval": 5000,
-        "decimalPrecision": 3,
-        "page": 'index',
-        "context": {}
-    };
+    var PROTOCOL_VERSION = 3,
+        PATH_DELIMITER = '.',
+        NAMESPACE_DELIMITER = '::',
+        active = false,
+        options:WeppySettings = {
+            "host": '/weppy',
+            "transport": 'url', // 'url' or 'post'
+            "active": false,
+            "sample": 1,
+            "aggregationInterval": 1000,
+            "maxInterval": 5000,
+            "decimalPrecision": 3,
+            "page": 'index',
+            "context": {}
+        },
+        initTime = +(new Date),
+        queue, aggregationTimeout, maxTimeout, sentPerformanceData,
+        now = window.performance && window.performance.now ? window.performance.now : () => {
+            return +(new Date);
+        },
+        log = window.console && window.console.log && window.console.log.apply ? window.console.log : () => {
+        },
+        logError = window.console && window.console.error && window.console.error.apply ? window.console.error : () => {
+        };
 
-    var initTime = +(new Date);
-
-    var now = window.performance && window.performance.now ? window.performance.now : () => { return +(new Date); };
-    var log = window.console && window.console.log && window.console.log.apply ? window.console.log : () => {};
-    var logError = window.console && window.console.error && window.console.error.apply ? window.console.error : () => {};
-    var round = (num:number, precision=options.decimalPrecision) => {
+    function round(num:number, precision = options.decimalPrecision) {
         return Math.round(num * Math.pow(10, precision)) / Math.pow(10, precision)
-    };
-    var buildPath = (path:string,subpath:string,glue:string=PATH_DELIMITER) => {
-        return path + (path != '' && subpath != ''? glue : '' ) + subpath;
-    };
-    var updateActive = () => {
+    }
+
+    function buildPath(path:string, subpath:string, glue:string = PATH_DELIMITER) {
+        return path + (path != '' && subpath != '' ? glue : '' ) + subpath;
+    }
+
+    function updateActive() {
         active = options.active && Math.random() < options.sample;
-    };
-    var extend = (first:any, second:any) => {
+    }
+
+    function extend(first:any, second:any) {
         if (first && second) {
             for (var key in second) {
                 if (second.hasOwnProperty(key)) {
@@ -48,15 +55,16 @@ module WeppyImpl {
             }
         }
         return first || second;
-    };
-    var sortedJson = function(obj) {
+    }
+
+    function sortedJson(obj) {
         var keys = Object.keys(obj).sort(),
             i, ret = {};
-        for (i=0;i<keys.length;i++) {
+        for (i = 0; i < keys.length; i++) {
             ret[keys[i]] = obj[keys[i]];
         }
         return JSON.stringify(ret);
-    };
+    }
 
     export enum MetricType { Counter, Gauge, Timer }
 
@@ -82,18 +90,24 @@ module WeppyImpl {
         }
     }
     class Queue {
-        private all: QueueData.Root;
-        private _empty: boolean;
+        private all:QueueData.Root;
+        private _empty:boolean;
+
         constructor() {
             this.clear();
         }
+
         clear() {
             this.all = {};
             this._empty = true;
         }
-        empty() { return this._empty; }
-        add(name:string,value:number,rollingAverage:boolean,annotations?) {
-            var data : QueueData.Data = this.find(name,annotations);
+
+        empty() {
+            return this._empty;
+        }
+
+        add(name:string, value:number, rollingAverage:boolean, annotations?) {
+            var data:QueueData.Data = this.find(name, annotations);
             if (rollingAverage) {
                 data.count = data.count || 0;
                 data.count++;
@@ -104,9 +118,10 @@ module WeppyImpl {
             }
             this._empty = false;
         }
-        private find(name:string,annotations?) : QueueData.Data {
-            var serializedAnnotations : any = annotations ? sortedJson(annotations) : false,
-                scope = this.all[name] = this.all[name] || {}, data : QueueData.Data;
+
+        private find(name:string, annotations?):QueueData.Data {
+            var serializedAnnotations:any = annotations ? sortedJson(annotations) : false,
+                scope = this.all[name] = this.all[name] || {}, data:QueueData.Data;
             if (serializedAnnotations) {
                 scope = scope.annotated = scope.annotated || {};
                 scope = scope[serializedAnnotations] = scope[serializedAnnotations] || {};
@@ -114,8 +129,10 @@ module WeppyImpl {
             data = scope.data = scope.data || {value: 0};
             return data;
         }
-        get_clear()  {
+
+        get_clear() {
             var measurements = {};
+
             function addMeasurement(name, data, annotations) {
                 if (data) {
                     var value = data.value;
@@ -129,19 +146,20 @@ module WeppyImpl {
                     measurements[name].push(measurement);
                 }
             }
+
             var names = Object.keys(this.all),
                 data, annotated, i, k;
-            for (i=0;i<names.length;i++) {
+            for (i = 0; i < names.length; i++) {
                 measurements[names[i]] = [];
                 data = this.all[names[i]].data;
                 annotated = this.all[names[i]].annotated;
                 if (data) {
-                    addMeasurement(names[i],data,null);
+                    addMeasurement(names[i], data, null);
                 }
                 if (annotated) {
                     for (k in annotated) {
                         if (annotated.hasOwnProperty(k)) {
-                            addMeasurement(names[i],annotated[k].data,JSON.parse(k));
+                            addMeasurement(names[i], annotated[k].data, JSON.parse(k));
                         }
                     }
                 }
@@ -150,25 +168,25 @@ module WeppyImpl {
             return measurements;
         }
     }
-    var queue = new Queue();
+    queue = new Queue();
 
-    function enqueue(type:MetricType,name:string,value:number,annotations?) {
+    function enqueue(type:MetricType, name:string, value:number, annotations?) {
         if (!active) {
             return;
         }
         var rollingAverage = type != MetricType.Counter;
-        queue.add(name,value,rollingAverage,annotations);
+        queue.add(name, value, rollingAverage, annotations);
         scheduleSending();
     }
 
-    var aggregationTimeout, maxTimeout;
     function scheduleSending() {
         clearTimeout(aggregationTimeout);
-        aggregationTimeout = setTimeout(sendQueue,options.aggregationInterval);
+        aggregationTimeout = setTimeout(sendQueue, options.aggregationInterval);
         if (!maxTimeout) {
-            maxTimeout = setTimeout(sendQueue,options.maxInterval);
+            maxTimeout = setTimeout(sendQueue, options.maxInterval);
         }
     }
+
     function clearSchedule() {
         clearTimeout(aggregationTimeout);
         clearTimeout(maxTimeout);
@@ -179,11 +197,11 @@ module WeppyImpl {
 
     function sendQueue() {
         clearSchedule();
-        if ( !active ) {
+        if (!active) {
             log("Would send Weppy queue");
             return;
         }
-        if ( !window.JSON || !JSON.stringify ) {
+        if (!window.JSON || !JSON.stringify) {
             queue.clear();
             return;
         }
@@ -196,20 +214,20 @@ module WeppyImpl {
     }
 
     function sendData(data) {
-        if ( typeof options.transport == 'function' ) {
+        if (typeof options.transport == 'function') {
             options.transport(data);
             return;
         }
         var url = options.host + '/v' + PROTOCOL_VERSION + '/send';
-        if ( options.transport == 'url' ) {
+        if (options.transport == 'url') {
             url += '?p=' + encodeURIComponent(JSON.stringify(data));
-            sendRequest(url,null);
-        } else if ( options.transport == 'post' ) {
-            sendRequest(url,JSON.stringify(data));
+            sendRequest(url, null);
+        } else if (options.transport == 'post') {
+            sendRequest(url, JSON.stringify(data));
         }
     }
 
-    function sendRequest( url, data ) {
+    function sendRequest(url, data) {
         var corsSupport = window.XMLHttpRequest && (XMLHttpRequest['defake'] || (new XMLHttpRequest()).withCredentials);
         var sameOrigin = true;
 
@@ -227,38 +245,44 @@ module WeppyImpl {
 
         var contentType = data == null ? 'text/plain' : 'application/json';
 
-        req.weppy = req.bucky = {track:false};
+        req.weppy = req.bucky = {track: false};
         req.open('POST', url, true);
         req.setRequestHeader('Content-Type', contentType);
         req.send(data);
         return req;
     }
 
-    var sentPerformanceData;
-
     export class Namespace implements WeppyNamespace {
-        public timer: NamespaceTimer;
-        constructor(private _root:string,private _path:string) {
+        public timer:NamespaceTimer;
+
+        constructor(private _root:string, private _path:string) {
             this.timer = new NamespaceTimer(this);
         }
-        namespace(root:string,path?:string) {
-            return new Namespace(root,path || '');
+
+        namespace(root:string, path?:string) {
+            return new Namespace(root, path || '');
         }
+
         into(subpath:string) {
-            return new Namespace(this._root,buildPath(this._path,subpath))
+            return new Namespace(this._root, buildPath(this._path, subpath))
         }
+
         private key(name:string) {
-            return buildPath(this._root,buildPath(this._path,name),NAMESPACE_DELIMITER);
+            return buildPath(this._root, buildPath(this._path, name), NAMESPACE_DELIMITER);
         }
-        send(type:MetricType,name:string,value:number,annotations?:WeppyContext) {
-            enqueue(type,this.key(name),value,annotations);
+
+        send(type:MetricType, name:string, value:number, annotations?:WeppyContext) {
+            enqueue(type, this.key(name), value, annotations);
         }
-        count(name:string,value:number=1,annotations?:WeppyContext) {
-            this.send(MetricType.Counter,name,value,annotations);
+
+        count(name:string, value:number = 1, annotations?:WeppyContext) {
+            this.send(MetricType.Counter, name, value, annotations);
         }
-        store(name:string,value:number,annotations?:WeppyContext) {
-            this.send(MetricType.Gauge,name,value,annotations);
+
+        store(name:string, value:number, annotations?:WeppyContext) {
+            this.send(MetricType.Gauge, name, value, annotations);
         }
+
         setOptions(opts:WeppySettings) {
             var key;
             for (key in opts) {
@@ -266,17 +290,18 @@ module WeppyImpl {
                     options[key] = opts[key];
                 }
             }
-            if ( 'sample' in opts || 'active' in opts ) {
+            if ('sample' in opts || 'active' in opts) {
                 updateActive();
             }
         }
+
         sendPagePerformance() {
-            if ( !window.performance || !window.performance.timing || sentPerformanceData ) {
+            if (!window.performance || !window.performance.timing || sentPerformanceData) {
                 return false;
             }
 
             var self = this, readyState = document.readyState;
-            if ( readyState == 'uninitialized' || readyState == 'loading') {
+            if (readyState == 'uninitialized' || readyState == 'loading') {
                 if (document.addEventListener) {
                     document.addEventListener("DOMContentLoaded", () => {
                         self.sendPagePerformance();
@@ -287,7 +312,7 @@ module WeppyImpl {
 
             sentPerformanceData = true;
             var timing = window.performance.timing, start = timing.navigationStart, key, time,
-                data : WeppyContext = {};
+                data:WeppyContext = {};
             for (key in timing) {
                 if (timing.hasOwnProperty(key)) {
                     time = timing[key];
@@ -299,7 +324,7 @@ module WeppyImpl {
             delete data['navigationStart'];
 
             var name = options.page;
-            self.namespace('PAGELOAD').timer.send(name,start,data);
+            self.namespace('PAGELOAD').timer.send(name, start, data);
 
             return true
         }
@@ -307,58 +332,68 @@ module WeppyImpl {
 
     export class NamespaceTimer implements WeppyNamespaceTimer {
         private PARTIALS;
+
         constructor(private _namespace:Namespace) {
             this.PARTIALS = {}
         }
-        send(name:string,duration:number,annotations?:WeppyContext) {
-            this._namespace.send(MetricType.Timer,name,duration,annotations);
+
+        send(name:string, duration:number, annotations?:WeppyContext) {
+            this._namespace.send(MetricType.Timer, name, duration, annotations);
         }
-        start(name:string,annotations?:WeppyContext) {
+
+        start(name:string, annotations?:WeppyContext) {
             this.PARTIALS[name] = [now(), annotations];
-            return new Timer(this,name);
+            return new Timer(this, name);
         }
-        stop(name:string,annotations?:WeppyContext) {
-            if ( !this.PARTIALS[name] ) {
-                logError("Timer "+name+" ended without having been started");
+
+        stop(name:string, annotations?:WeppyContext) {
+            if (!this.PARTIALS[name]) {
+                logError("Timer " + name + " ended without having been started");
                 return;
             }
             var duration = now() - this.PARTIALS[name][0];
-            annotations = extend(annotations,this.PARTIALS[name][1]);
+            annotations = extend(annotations, this.PARTIALS[name][1]);
             this.PARTIALS[name] = false;
-            this.send(name,duration,annotations);
+            this.send(name, duration, annotations);
         }
-        annotate(name:string,annotations:WeppyContext) {
-            if ( !this.PARTIALS[name] ) {
-                logError("Timer "+name+" received annotation without having been started");
+
+        annotate(name:string, annotations:WeppyContext) {
+            if (!this.PARTIALS[name]) {
+                logError("Timer " + name + " received annotation without having been started");
                 return;
             }
             this.PARTIALS[name][1] = annotations;
         }
-        time(name:string,action,scope,args,annotations?:WeppyContext) {
-            this.start(name,annotations);
+
+        time(name:string, action, scope, args, annotations?:WeppyContext) {
+            this.start(name, annotations);
             var self = this,
                 done = (annotations?) => {
-                    self.stop(name,annotations);
+                    self.stop(name, annotations);
                 };
             args = args ? args.slice(0) : [];
-            args.splice(0,0,done);
-            return action.apply(scope,args);
+            args.splice(0, 0, done);
+            return action.apply(scope, args);
         }
-        timeSync(name:string,action,scope,args,annotations?:WeppyContext) {
-            this.start(name,annotations);
-            var ret = action.apply(scope,args);
+
+        timeSync(name:string, action, scope, args, annotations?:WeppyContext) {
+            this.start(name, annotations);
+            var ret = action.apply(scope, args);
             this.stop(name);
             return ret;
         }
-        wrap(name:string,action,scope,annotations?:WeppyContext) {
+
+        wrap(name:string, action, scope, annotations?:WeppyContext) {
             var self = this;
             return () => {
-                return self.timeSync(name,action,scope||this,arguments,annotations);
+                return self.timeSync(name, action, scope || this, arguments, annotations);
             };
         }
-        mark(name:string,annotations?:WeppyContext) {
-            this.send(name,now()-this.navigationStart(),annotations);
+
+        mark(name:string, annotations?:WeppyContext) {
+            this.send(name, now() - this.navigationStart(), annotations);
         }
+
         private navigationStart() {
             return (window.performance && window.performance.timing && window.performance.timing.navigationStart) ||
                 initTime;
@@ -366,16 +401,19 @@ module WeppyImpl {
     }
 
     export class Timer implements WeppyTimer {
-        constructor(private _timer:NamespaceTimer,private name:string) {}
-        stop(annotations?) {
-            this._timer.stop(this.name,annotations);
+        constructor(private _timer:NamespaceTimer, private name:string) {
         }
+
+        stop(annotations?) {
+            this._timer.stop(this.name, annotations);
+        }
+
         annotate(annotations) {
-            this._timer.annotate(this.name,annotations);
+            this._timer.annotate(this.name, annotations);
         }
     }
 
     updateActive();
 }
 
-var Weppy : WeppyNamespace = new WeppyImpl.Namespace('','');
+var Weppy:WeppyNamespace = new WeppyImpl.Namespace('', '');
