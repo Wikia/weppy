@@ -182,7 +182,7 @@ it adds suffix "/vX/send" where X is replaced by protocol version. It always doe
 
 Next you need to choose a method for encoding the data using the "transport" option. You have two options right now:
 - "url" (default one) - puts the entire JSON data into a single URL parameter "p", example:
-  /weppy/v3/send?p=ENCODED_JSON_DATA
+  "/weppy/v3/send?p=ENCODED_JSON_DATA"
 - "post" - does a POST request and puts the JSON data into POST data.
 
 To be correctly precise you have the third option for processing collected metrics. If you pass a function
