@@ -36,6 +36,9 @@ by using code like this:
 ```html
 <script src="weppy.js"></script>
 <script type="text/javascript">
+```
+Set your configuration
+```javascript
 	Weppy.setOptions({
 		context: {
 			url: window.location.href.split('#')[0],
@@ -43,21 +46,40 @@ by using code like this:
 			'user-agent': window.navigator.userAgent
 		}
 	});
-
+```
+Report a page view from a user. You could as well want to include it in the global context and specify it above.
+```javascript
 	// report page view from logger in user
 	Weppy.count('pageview.fromuser.'+window.myApp.userName);
-
+```
+Create a helper Weppy object so you don't need to repeat the measurement name prefix
+```javascript
 	// handle Lightbox metrics
 	var lightboxMetrics = Weppy('Lightbox');
-
+```
+Let's try to report how long it takes to open a lightbox. First try to do it manually:
+```javascript
 	var openTimer = lightboxMetrics.timer.start('open');
 	// do some ajax call
-	ajax_call(function(response){
+	ajax_call(function(response) {
 		openTimer.stop({
 			'image-count': response.imagesCount
 		});
 	});
-	// ... and then user opens two lightboxes during session: first with 12 images and second with 3 images
+```
+On the other hand you might leverage the helper function timer.time():
+```javascript
+	lightboxMetrics.timer.time('open',function(done) {
+		ajax_call(function(response) { // called with global scope as we didn't pass third argument to .timer.time()
+			done({
+				'image-count': response.imagesCount
+			});
+		});
+	});
+```
+And then when a user opens two lightboxes during session, first one with 12 images and second with 3 images we might 
+get the example data reported to server. For more features please refer to the next section [API](#api).
+```javascript
 </script>
 ```
 
