@@ -69,9 +69,9 @@ Let's try to report how long it takes to open a lightbox. First try to do it man
 ```
 On the other hand you might leverage the helper function timer.time():
 ```javascript
-	lightboxMetrics.timer.time('open',function(done) {
+	lightboxMetrics.timer.time('open',function(stopTimer) {
 		ajax_call(function(response) { // called with global scope as we didn't pass third argument to .timer.time()
-			done({
+			stopTimer({
 				'image-count': response.imagesCount
 			});
 		});
