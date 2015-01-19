@@ -9,8 +9,8 @@ structure of the reported data, allows custom attributes to be reported with the
 sending the page context with all the measurements done on a page. See [comparison with Bucky](#comparison-with-bucky)
 for more details.
 
-Example code
-------------
+Example
+-------
 
 You can get the following data reported to the server:
 ```json
@@ -124,8 +124,8 @@ Update annotations of given `Timer` with `annotations`.
 Stop the timer and optionally update `annotations`. Then add a new measurement with previously specified name 
 (type: "timer").
 
-Option reference
-----------------
+Options reference
+-----------------
 
 ### host
 Type: string (default: "/weppy")
@@ -136,7 +136,7 @@ Absolute or relative base path for reporting data. Some automatic suffix is adde
 Type: "url" | "post" | callback (default: "url")
 
 Transport that should be used to report collected measurements. 
-See [Transport options explanation](#transport-options) for more information.
+See [transport options](#transport-options) explanation for more information.
 
 ### active
 Type: boolean (default: true)
@@ -188,7 +188,7 @@ Next you need to choose a method for encoding the data using the "transport" opt
 To be correctly precise you have the third option for processing collected metrics. If you pass a function
 as a "transport" option you can take over the entire data reporting process. The normal request is not made in such
 case and your function will be called every time Weppy would send a request. The single parameter will be passed
-to this function containing the collected data as a plain Javascript object (exactly as in the [example](#example-code)).
+to this function containing the collected data as a plain Javascript object (exactly as in the [example](#example)).
 
 Comparison with Bucky
 ---------------------
