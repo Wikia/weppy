@@ -17,7 +17,7 @@ You can get the following data reported to the server:
 {
 	"context": {
 		"url": "http://my.domain.com/article/Some_great_article",
-		"skin": "modern"
+		"skin": "modern",
 		"user-agent": "Whatever User Agent the visitor has"
 	},
 	"data": {
@@ -25,9 +25,9 @@ You can get the following data reported to the server:
 			[ 0.24, { "image-count": 12 } ],
 			[ 0.12, { "image-count": 3 } ]
 		],
-		"pageview.fromuser.Testuser": {
+		"pageview.fromuser.Testuser": [
 			[ 1 ]
-		}
+		]
 	}
 }
 ```
