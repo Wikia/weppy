@@ -315,9 +315,10 @@ var WeppyImpl;
             return ret;
         };
         NamespaceTimer.prototype.wrap = function (name, action, scope, annotations) {
+            var _this = this;
             var self = this;
             return function () {
-                return self.timeSync(name, action, scope, arguments, annotations);
+                return self.timeSync(name, action, scope || _this, arguments, annotations);
             };
         };
         NamespaceTimer.prototype.mark = function (name, annotations) {
