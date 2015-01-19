@@ -6,7 +6,7 @@ using window.performance API and allows any other metric to be reported as well.
 
 Weppy is heavily inspired by [BuckyClient](https://github.com/HubSpot/BuckyClient). However it puts more focus into
 structure of the reported data, allows custom attributes to be reported with the measurement itself and supports
-sending the page context with all the measurements done on a page. See (comparison with Bucky)[#Comparison with Bucky]
+sending the page context with all the measurements done on a page. See [comparison with Bucky](#Comparison with Bucky)
 for more details.
 
 Example code
@@ -67,7 +67,7 @@ API
 Weppy API can be accessed using a global variable named `Weppy` or `window.Weppy` and has the following methods:
 
 ### .setOptions( options )
-Update global configuration. See (options)[#Options reference]
+Update global configuration. See [options](#Options reference)
 
 ### .into( path )
 Create and return a new Weppy object bound to a prefix with appended `path` at the end. 
@@ -136,7 +136,7 @@ Absolute or relative base path for reporting data. Some automatic suffix is adde
 Type: "url" | "post" | callback (default: "url")
 
 Transport that should be used to report collected measurements. 
-See (Transport options explanation)[#Transport options] for more information.
+See [Transport options explanation](#Transport options) for more information.
 
 ### active
 Type: boolean (default: true)
@@ -188,7 +188,7 @@ Next you need to choose a method for encoding the data using the "transport" opt
 To be correctly precise you have the third option for processing collected metrics. If you pass a function
 as a "transport" option you can take over the entire data reporting process. The normal request is not made in such
 case and your function will be called every time Weppy would send a request. The single parameter will be passed
-to this function containing the collected data as a plain Javascript object (exactly as in the [example](#Example)).
+to this function containing the collected data as a plain Javascript object (exactly as in the [example](#Example code)).
 
 Comparison with Bucky
 ---------------------
