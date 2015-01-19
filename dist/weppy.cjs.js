@@ -263,7 +263,7 @@ var WeppyImpl;
                 }
             }
             delete data['navigationStart'];
-            var name = '_'; // @todo: think through
+            var name = options.page;
             self.namespace('PAGELOAD').timer.send(name, start, data);
             return true;
         };
