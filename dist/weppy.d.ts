@@ -38,6 +38,7 @@ interface WeppySettings {
 	decimalPrecision?: number;
 	page?: string;
 	context?: {};
+	debug?: any; // boolean | function
 }
 
 interface Window {

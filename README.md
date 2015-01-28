@@ -86,7 +86,11 @@ get the example data reported to server. For more features please refer to the n
 API
 ---
 
-Weppy API can be accessed using a global variable named `Weppy` or `window.Weppy` and has the following methods:
+Weppy API can be accessed by using:
+* global variable named `Weppy` or `window.Weppy` (defined with empty namespace and empty prefix)
+* an object returned by `.into()` or `.namespace()` bound to a specific namespace and prefix
+
+Weppy API consists of the following methods:
 
 ### .setOptions( options )
 Update global configuration. See [options reference](#options-reference)
@@ -195,6 +199,11 @@ Type: object (default: {})
 
 Page context that is reported along with any measurement.
 
+### debug
+Type: boolean | function (default: false)
+
+Debug control. Set to true to send debugging information to console using `window.console.log()`. You also may pass
+a function that will receive all the calls instead of `console.log`.
 
 Transport options
 -----------------

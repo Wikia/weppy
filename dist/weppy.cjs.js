@@ -10,10 +10,16 @@ var WeppyImpl;
         "maxInterval": 5000,
         "decimalPrecision": 3,
         "page": 'index',
-        "context": {}
+        "context": {},
+        "debug": false
     }, initTime = +(new Date), queue, aggregationTimeout, maxTimeout, sentPerformanceData, now = window.performance && window.performance.now ? window.performance.now : function () {
         return +(new Date);
-    }, log = window.console && window.console.log && window.console.log.apply ? window.console.log : function () {
+    }, log = function () {
+        if (options.debug)
+            if (typeof options.debug == 'function')
+                options.debug.apply(window, arguments);
+            else
+                window.console && window.console.log && window.console.log.apply ? window.console.log.apply(window.console, arguments) : void 0;
     }, logError = window.console && window.console.error && window.console.error.apply ? window.console.error : function () {
     };
     function round(num, precision) {
@@ -144,7 +150,7 @@ var WeppyImpl;
     function sendQueue() {
         clearSchedule();
         if (!active) {
-            log("Would send Weppy queue");
+            log("Weppy: would send queue but inactive");
             return;
         }
         if (!window.JSON || !JSON.stringify) {
@@ -156,6 +162,7 @@ var WeppyImpl;
             context: options.context,
             data: all_measurements
         };
+        log('Weppy: sending', all_data);
         sendData(all_data);
     }
     function sendData(data) {
@@ -209,7 +216,14 @@ var WeppyImpl;
             return buildPath(this._root, buildPath(this._path, name), NAMESPACE_DELIMITER);
         };
         Namespace.prototype.send = function (type, name, value, annotations) {
-            enqueue(type, this.key(name), value, annotations);
+            name = this.key(name);
+            enqueue(type, name, value, annotations);
+            log('Weppy: queued', {
+                type: MetricType[type],
+                name: name,
+                value: value,
+                annotations: annotations
+            });
         };
         Namespace.prototype.count = function (name, value, annotations) {
             if (value === void 0) { value = 1; }

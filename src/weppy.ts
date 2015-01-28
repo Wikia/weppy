@@ -22,14 +22,21 @@ module WeppyImpl {
 			"maxInterval": 5000,
 			"decimalPrecision": 3,
 			"page": 'index',
-			"context": {}
+			"context": {},
+			"debug": false
 		},
 		initTime = +(new Date),
 		queue, aggregationTimeout, maxTimeout, sentPerformanceData,
 		now = window.performance && window.performance.now ? window.performance.now : () => {
 			return +(new Date);
 		},
-		log = window.console && window.console.log && window.console.log.apply ? window.console.log : () => {
+		log : any = () => {
+			if (options.debug)
+				if (typeof options.debug == 'function')
+					options.debug.apply(window,arguments);
+				else
+					window.console && window.console.log && window.console.log.apply
+						? window.console.log.apply(window.console,arguments) : void 0;
 		},
 		logError = window.console && window.console.error && window.console.error.apply ? window.console.error : () => {
 		};
@@ -198,7 +205,7 @@ module WeppyImpl {
 	function sendQueue() {
 		clearSchedule();
 		if (!active) {
-			log("Would send Weppy queue");
+			log("Weppy: would send queue but inactive");
 			return;
 		}
 		if (!window.JSON || !JSON.stringify) {
@@ -210,6 +217,7 @@ module WeppyImpl {
 			context: options.context,
 			data: all_measurements
 		};
+		log('Weppy: sending',all_data);
 		sendData(all_data);
 	}
 
@@ -272,7 +280,14 @@ module WeppyImpl {
 		}
 
 		send(type:MetricType, name:string, value:number, annotations?:WeppyContext) {
-			enqueue(type, this.key(name), value, annotations);
+			name = this.key(name);
+			enqueue(type, name, value, annotations);
+			log('Weppy: queued', {
+				type: MetricType[type],
+				name: name,
+				value: value,
+				annotations: annotations
+			});
 		}
 
 		count(name:string, value:number = 1, annotations?:WeppyContext) {
