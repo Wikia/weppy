@@ -30,13 +30,13 @@ module WeppyImpl {
 		now = window.performance && window.performance.now ? window.performance.now : () => {
 			return +(new Date);
 		},
-		log : any = () => {
+		log:any = () => {
 			if (options.debug)
 				if (typeof options.debug == 'function')
-					options.debug.apply(window,arguments);
+					options.debug.apply(window, arguments);
 				else
 					window.console && window.console.log && window.console.log.apply
-						? window.console.log.apply(window.console,arguments) : void 0;
+						? window.console.log.apply(window.console, arguments) : void 0;
 		},
 		logError = window.console && window.console.error && window.console.error.apply ? window.console.error : () => {
 		};
@@ -217,7 +217,7 @@ module WeppyImpl {
 			context: options.context,
 			data: all_measurements
 		};
-		log('Weppy: sending',all_data);
+		log('Weppy: sending', all_data);
 		sendData(all_data);
 	}
 

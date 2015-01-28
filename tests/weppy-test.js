@@ -6,31 +6,31 @@ QUnit.module('Weppy tests');
 
 /* propEqual copy from QUnit without adding an assertion */
 var hasOwn = Object.prototype.hasOwnProperty,
-	objectValues = function( obj ) {
+	objectValues = function (obj) {
 		var key, val,
-			vals = QUnit.is( "array", obj ) ? [] : {};
-		for ( key in obj ) {
-			if ( hasOwn.call( obj, key ) ) {
-				val = obj[ key ];
-				vals[ key ] = val === Object( val ) ? objectValues( val ) : val;
+			vals = QUnit.is("array", obj) ? [] : {};
+		for (key in obj) {
+			if (hasOwn.call(obj, key)) {
+				val = obj[key];
+				vals[key] = val === Object(val) ? objectValues(val) : val;
 			}
 		}
 		return vals;
 	},
-	equivObjects = function( a, b ) {
-		a = objectValues( a );
-		b = objectValues( b );
-		return QUnit.equiv( a, b );
+	equivObjects = function (a, b) {
+		a = objectValues(a);
+		b = objectValues(b);
+		return QUnit.equiv(a, b);
 	};
 /* end of propEqual copy */
 
 
 for (var k in _console) {
 	if (typeof _console[k] == 'function') {
-		consoleMock[k] = (function(k) {
+		consoleMock[k] = (function (k) {
 			return function () {
 				consoleCalls[k] = consoleCalls[k] || [];
-				consoleCalls[k].push(Array.prototype.slice.apply(arguments,[0]));
+				consoleCalls[k].push(Array.prototype.slice.apply(arguments, [0]));
 				return _console[k].apply(_console, arguments);
 			}
 		})(k);
@@ -389,27 +389,27 @@ QUnit.test('Option "debug" is respected when false', function () {
 		setup: function () {
 			Weppy.setOptions({debug: false});
 			Weppy.count('aaa', 1, {test: 1});
-			Weppy.timer.send('tmm',1.2);
+			Weppy.timer.send('tmm', 1.2);
 		},
 		check: function (data) {
 			var logCalls = getConsoleLog().log || [];
 			console.log(logCalls);
 			var receivedLogs = {}, i;
-			for (i=0;i<logCalls.length;i++) {
+			for (i = 0; i < logCalls.length; i++) {
 				var logText = logCalls[i][0], logData = logCalls[i][1];
 				if (logText.indexOf('Weppy') < 0) continue;
-				if (logText.indexOf('queued') >= 0 && QUnit.is( 'object', logData )) {
-					if ( logData.type == 'Counter' && logData.name == 'aaa' && logData.value == 1 && equivObjects(logData.annotations,{test: 1}) )
+				if (logText.indexOf('queued') >= 0 && QUnit.is('object', logData)) {
+					if (logData.type == 'Counter' && logData.name == 'aaa' && logData.value == 1 && equivObjects(logData.annotations, {test: 1}))
 						receivedLogs['aaa'] = true;
-					if ( logData.type == 'Timer' && logData.name == 'tmm' && logData.value == 1.2 && equivObjects(logData.annotations,{}) )
+					if (logData.type == 'Timer' && logData.name == 'tmm' && logData.value == 1.2 && equivObjects(logData.annotations, {}))
 						receivedLogs['tmm'] = true;
 				}
 				if (logText.indexOf('sending') >= 0)
 					receivedLogs['sending'] = true;
 			}
-			ok(!receivedLogs['aaa'],"Counter aaa debug");
-			ok(!receivedLogs['tmm'],"Timer tmm debug");
-			ok(!receivedLogs['sending'],"Sending debug");
+			ok(!receivedLogs['aaa'], "Counter aaa debug");
+			ok(!receivedLogs['tmm'], "Timer tmm debug");
+			ok(!receivedLogs['sending'], "Sending debug");
 		}
 	})
 });
@@ -420,63 +420,63 @@ QUnit.test('Option "debug" is respected when true', function () {
 		setup: function () {
 			Weppy.setOptions({debug: true});
 			Weppy.count('aaa', 1, {test: 1});
-			Weppy.timer.send('tmm',1.2);
+			Weppy.timer.send('tmm', 1.2);
 		},
 		check: function (data) {
 			var logCalls = getConsoleLog().log || [];
 			console.log(logCalls);
 			var receivedLogs = {}, i;
-			for (i=0;i<logCalls.length;i++) {
+			for (i = 0; i < logCalls.length; i++) {
 				var logText = logCalls[i][0], logData = logCalls[i][1];
 				if (logText.indexOf('Weppy') < 0) continue;
-				if (logText.indexOf('queued') >= 0 && QUnit.is( 'object', logData )) {
-					if ( logData.type == 'Counter' && logData.name == 'aaa' && logData.value == 1 && equivObjects(logData.annotations,{test: 1}) )
+				if (logText.indexOf('queued') >= 0 && QUnit.is('object', logData)) {
+					if (logData.type == 'Counter' && logData.name == 'aaa' && logData.value == 1 && equivObjects(logData.annotations, {test: 1}))
 						receivedLogs['aaa'] = true;
-					if ( logData.type == 'Timer' && logData.name == 'tmm' && logData.value == 1.2 && equivObjects(logData.annotations,{}) )
+					if (logData.type == 'Timer' && logData.name == 'tmm' && logData.value == 1.2 && equivObjects(logData.annotations, {}))
 						receivedLogs['tmm'] = true;
 				}
 				if (logText.indexOf('sending') >= 0)
 					receivedLogs['sending'] = true;
 			}
-			ok(receivedLogs['aaa'],"Counter aaa debug");
-			ok(receivedLogs['tmm'],"Timer tmm debug");
-			ok(receivedLogs['sending'],"Sending debug");
+			ok(receivedLogs['aaa'], "Counter aaa debug");
+			ok(receivedLogs['tmm'], "Timer tmm debug");
+			ok(receivedLogs['sending'], "Sending debug");
 		}
 	})
 });
 
 QUnit.test('Option "debug" is respected when function', function () {
 	var _logCalls = [],
-		_logFunction = function() {
-			_logCalls.push(Array.prototype.slice.call(arguments,0));
+		_logFunction = function () {
+			_logCalls.push(Array.prototype.slice.call(arguments, 0));
 		};
 	clearConsoleLog();
 	runWeppyReportTest({
 		setup: function () {
 			Weppy.setOptions({debug: _logFunction});
 			Weppy.count('aaa', 1, {test: 1});
-			Weppy.timer.send('tmm',1.2);
+			Weppy.timer.send('tmm', 1.2);
 		},
 		check: function (data) {
 			var logCalls = getConsoleLog().log || [];
-			equal(logCalls.length,0,'no calls to console.log()');
+			equal(logCalls.length, 0, 'no calls to console.log()');
 			logCalls = _logCalls;
 			var receivedLogs = {}, i;
-			for (i=0;i<logCalls.length;i++) {
+			for (i = 0; i < logCalls.length; i++) {
 				var logText = logCalls[i][0], logData = logCalls[i][1];
 				if (logText.indexOf('Weppy') < 0) continue;
-				if (logText.indexOf('queued') >= 0 && QUnit.is( 'object', logData )) {
-					if ( logData.type == 'Counter' && logData.name == 'aaa' && logData.value == 1 && equivObjects(logData.annotations,{test: 1}) )
+				if (logText.indexOf('queued') >= 0 && QUnit.is('object', logData)) {
+					if (logData.type == 'Counter' && logData.name == 'aaa' && logData.value == 1 && equivObjects(logData.annotations, {test: 1}))
 						receivedLogs['aaa'] = true;
-					if ( logData.type == 'Timer' && logData.name == 'tmm' && logData.value == 1.2 && equivObjects(logData.annotations,{}) )
+					if (logData.type == 'Timer' && logData.name == 'tmm' && logData.value == 1.2 && equivObjects(logData.annotations, {}))
 						receivedLogs['tmm'] = true;
 				}
 				if (logText.indexOf('sending') >= 0)
 					receivedLogs['sending'] = true;
 			}
-			ok(receivedLogs['aaa'],"Counter aaa debug");
-			ok(receivedLogs['tmm'],"Timer tmm debug");
-			ok(receivedLogs['sending'],"Sending debug");
+			ok(receivedLogs['aaa'], "Counter aaa debug");
+			ok(receivedLogs['tmm'], "Timer tmm debug");
+			ok(receivedLogs['sending'], "Sending debug");
 		}
 	})
 });
