@@ -5,8 +5,8 @@ define(["require", "exports"], function (require, exports) {
         var PROTOCOL_VERSION = 3, PATH_DELIMITER = '.', NAMESPACE_DELIMITER = '::', active = false, options = {
             "host": '/weppy',
             "transport": 'url',
-            "active": false,
-            "sample": 1,
+            "active": true,
+            "sample": 0.01,
             "aggregationInterval": 1000,
             "maxInterval": 5000,
             "decimalPrecision": 3,

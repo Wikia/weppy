@@ -16,8 +16,8 @@ module WeppyImpl {
 		options:WeppySettings = {
 			"host": '/weppy',
 			"transport": 'url', // 'url' or 'post'
-			"active": false,
-			"sample": 1,
+			"active": true,
+			"sample": 0.01,
 			"aggregationInterval": 1000,
 			"maxInterval": 5000,
 			"decimalPrecision": 3,

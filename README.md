@@ -170,7 +170,7 @@ Type: boolean (default: true)
 Disables Weppy completely if `active` is set to *false*.
 
 ### sample
-Type: number (default: 1)
+Type: number (default: 0.01 = 1%)
 
 Sampling rate in the range between 0 and 1. 0 is 0%, 0.1 is 10% and 1 is 100%.
 
