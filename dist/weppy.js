@@ -12,15 +12,16 @@ var WeppyImpl;
         "page": 'index',
         "context": {},
         "debug": false
-    }, initTime = +(new Date), queue, aggregationTimeout, maxTimeout, sentPerformanceData, now = window.performance && window.performance.now ? window.performance.now : function () {
-        return +(new Date);
+    }, initTime = +(new Date), queue, aggregationTimeout, maxTimeout, sentPerformanceData, now = function () {
+        return window.performance && window.performance.now ? window.performance.now() : +(new Date);
     }, log = function () {
         if (options.debug)
             if (typeof options.debug == 'function')
                 options.debug.apply(window, arguments);
             else
                 window.console && window.console.log && window.console.log.apply ? window.console.log.apply(window.console, arguments) : void 0;
-    }, logError = window.console && window.console.error && window.console.error.apply ? window.console.error : function () {
+    }, logError = function () {
+        window.console && window.console.error && window.console.error.apply && window.console.error.apply(window.console, arguments);
     };
     function round(num, precision) {
         if (precision === void 0) { precision = options.decimalPrecision; }

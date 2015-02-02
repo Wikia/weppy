@@ -27,8 +27,8 @@ module WeppyImpl {
 		},
 		initTime = +(new Date),
 		queue, aggregationTimeout, maxTimeout, sentPerformanceData,
-		now = window.performance && window.performance.now ? window.performance.now : () => {
-			return +(new Date);
+		now = () => {
+			return window.performance && window.performance.now ? window.performance.now() : +(new Date);
 		},
 		log:any = () => {
 			if (options.debug)
@@ -38,7 +38,9 @@ module WeppyImpl {
 					window.console && window.console.log && window.console.log.apply
 						? window.console.log.apply(window.console, arguments) : void 0;
 		},
-		logError = window.console && window.console.error && window.console.error.apply ? window.console.error : () => {
+		logError:any = () => {
+			window.console && window.console.error && window.console.error.apply &&
+				window.console.error.apply(window.console,arguments);
 		};
 
 	function round(num:number, precision = options.decimalPrecision) {
