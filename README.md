@@ -92,55 +92,56 @@ Weppy API can be accessed by using:
 
 Weppy API consists of the following methods:
 
-### .setOptions( options )
+### <Weppy>.setOptions( options )
 Update global configuration. See [options reference](#options-reference)
 
-### .into( path )
+### <Weppy>.into( path ) *or* <Weppy>( path )
+
 Create and return a new Weppy object bound to a prefix with appended `path` at the end. 
 
-### .namespace( namespace, path )
+### <Weppy>.namespace( namespace, path )
 Create and return a new Weppy object bound to a different `namespace` and with specified prefix `path`. Both
 arguments can be an empty string meaning either selecting a default namespace or empty prefix.
 
-### .count( name, value = 1, annotations = null )
+### <Weppy>.count( name, value = 1, annotations = null )
 Add a new measurement `name` (type: "counter") with `value` and optional `annotations`.
 
-### .store( name, value = 1, annotations = null )
+### <Weppy>.store( name, value = 1, annotations = null )
 Add a new measurement `name` (type: "gauge") with `value` and optional `annotations`.
 
-### .flush()
+### <Weppy>.flush()
 Send all pending measurements.
 
-### .sendPagePerformance()
+### <Weppy>.sendPagePerformance()
 Instruct Weppy to report all metrics available in window.performance API as soon as DOMContentLoaded event is fired.
 
-### .timer.start( name, annotations = null )
+### <Weppy>.timer.start( name, annotations = null )
 Start a new timer `name` with optional `annotations`. Return `Timer` object for convenience.
 
-### .timer.stop( name, annotations = null )
+### <Weppy>.timer.stop( name, annotations = null )
 Stop a timer `name` and add a new measurement `name` (type: "timer"). Extend previously defined annotations 
 with `annotations`.
 
-### .timer.send( name, duration, annotations = null )
+### <Weppy>.timer.send( name, duration, annotations = null )
 Add a new measurement `name` (type: "timer") with `duration` and optional `annotations`.
 
-### .timer.annotate( name, annotations )
+### <Weppy>.timer.annotate( name, annotations )
 Update annotations of currently running timer `name` with `annotations`.
 
-### .timer.mark( name, annotations = null )
+### <Weppy>.timer.mark( name, annotations = null )
 Add a new measurement `name` (type: "timer") with the time passed after `window.performance.navigationStart` with
 optional `annotations`.
 
-### .timer.time( name, action, scope, args, annotations = null )
+### <Weppy>.timer.time( name, action, scope, args, annotations = null )
 Call a function `action` with `scope` and arguments `args` prepended by a callback that should be called when the
 asynchronous operation finishes. The callback takes one optional parameter `annotations` that are appended if specified.
 When a callback gets called add a new measurement `name` with the time of the operation and optional `annotations`.
 
-### .timer.timeSync( name, action, scope, args, annotations = null )
+### <Weppy>.timer.timeSync( name, action, scope, args, annotations = null )
 Call a function `action` with `scope` and `args`. Then add a new measurement `name` (type: "timer") with the time taken 
 to execute the function and optional `annotations`.
 
-### .timer.wrap( name, action, scope, annotations = null )
+### <Weppy>.timer.wrap( name, action, scope, annotations = null )
 Create and return a wrapper function that calls the function `action` with optional scope override with `scope`. 
 Arguments and return value are passed without change.
 Each time the function gets called add a new measurement `name` (type: "timer") with the time taken to execute
