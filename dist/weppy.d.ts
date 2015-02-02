@@ -1,3 +1,7 @@
+interface WeppyObject extends WeppyNamespace {
+	(subpath:string): WeppyNamespace;
+}
+
 interface WeppyNamespace {
 	timer: WeppyNamespaceTimer;
 	namespace(root:string, path?:string): WeppyNamespace;

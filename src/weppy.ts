@@ -338,11 +338,9 @@ module WeppyImpl {
 			var timing = window.performance.timing, start = timing.navigationStart, key, time,
 				data:WeppyContext = {};
 			for (key in timing) {
-				if (timing.hasOwnProperty(key)) {
-					time = timing[key];
-					if (time && typeof time == 'number') {
-						data[key] = (time - start);
-					}
+				time = timing[key];
+				if (time && typeof time == 'number') {
+					data[key] = (time - start);
 				}
 			}
 			delete data['navigationStart'];
@@ -437,7 +435,35 @@ module WeppyImpl {
 		}
 	}
 
+	function bindNamespaceFunction( fn, scope, callWrapNamespace ) {
+		return callWrapNamespace ?
+			() => {
+				return wrapNamespaceObject(fn.apply(scope,arguments));
+			} :
+			() => {
+				return fn.apply(scope,arguments);
+			}
+	}
+
+	function wrapNamespaceObject( obj: WeppyNamespace ) {
+		var weppyObject: WeppyObject = <WeppyObject>((subpath:string) => {
+				return subpath ? weppyObject.into(subpath) : weppyObject;
+			}), k;
+		for (k in obj) {
+			if ( typeof obj[k] == 'function' ) {
+				weppyObject[k] = bindNamespaceFunction(obj[k],obj,
+					k == 'into' || k == 'namespace');
+			} else {
+				weppyObject[k] = obj[k];
+			}
+		}
+		return weppyObject;
+	}
+
+	export function getRootObject() {
+		return wrapNamespaceObject(new Namespace('',''));
+	}
 	updateActive();
 }
 
-var Weppy:WeppyNamespace = new WeppyImpl.Namespace('', '');
+var Weppy:WeppyNamespace = WeppyImpl.getRootObject();

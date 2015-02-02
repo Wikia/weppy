@@ -267,11 +267,9 @@ define(["require", "exports"], function (require, exports) {
                 sentPerformanceData = true;
                 var timing = window.performance.timing, start = timing.navigationStart, key, time, data = {};
                 for (key in timing) {
-                    if (timing.hasOwnProperty(key)) {
-                        time = timing[key];
-                        if (time && typeof time == 'number') {
-                            data[key] = (time - start);
-                        }
+                    time = timing[key];
+                    if (time && typeof time == 'number') {
+                        data[key] = (time - start);
                     }
                 }
                 delete data['navigationStart'];
@@ -356,8 +354,33 @@ define(["require", "exports"], function (require, exports) {
             return Timer;
         })();
         WeppyImpl.Timer = Timer;
+        function bindNamespaceFunction(fn, scope, callWrapNamespace) {
+            return callWrapNamespace ? function () {
+                return wrapNamespaceObject(fn.apply(scope, arguments));
+            } : function () {
+                return fn.apply(scope, arguments);
+            };
+        }
+        function wrapNamespaceObject(obj) {
+            var weppyObject = (function (subpath) {
+                return subpath ? weppyObject.into(subpath) : weppyObject;
+            }), k;
+            for (k in obj) {
+                if (typeof obj[k] == 'function') {
+                    weppyObject[k] = bindNamespaceFunction(obj[k], obj, k == 'into' || k == 'namespace');
+                }
+                else {
+                    weppyObject[k] = obj[k];
+                }
+            }
+            return weppyObject;
+        }
+        function getRootObject() {
+            return wrapNamespaceObject(new Namespace('', ''));
+        }
+        WeppyImpl.getRootObject = getRootObject;
         updateActive();
     })(WeppyImpl || (WeppyImpl = {}));
-    var Weppy = new WeppyImpl.Namespace('', '');
+    var Weppy = WeppyImpl.getRootObject();
     return Weppy;
 });
