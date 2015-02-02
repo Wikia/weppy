@@ -150,6 +150,9 @@ define(["require", "exports"], function (require, exports) {
         }
         function sendQueue() {
             clearSchedule();
+            if (queue.empty()) {
+                return;
+            }
             if (!active) {
                 log("Weppy: would send queue but inactive");
                 return;
@@ -232,6 +235,9 @@ define(["require", "exports"], function (require, exports) {
             };
             Namespace.prototype.store = function (name, value, annotations) {
                 this.send(1 /* Gauge */, name, value, annotations);
+            };
+            Namespace.prototype.flush = function () {
+                sendQueue();
             };
             Namespace.prototype.setOptions = function (opts) {
                 var key;

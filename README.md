@@ -108,6 +108,9 @@ Add a new measurement `name` (type: "counter") with `value` and optional `annota
 ### .store( name, value = 1, annotations = null )
 Add a new measurement `name` (type: "gauge") with `value` and optional `annotations`.
 
+### .flush()
+Send all pending measurements.
+
 ### .sendPagePerformance()
 Instruct Weppy to report all metrics available in window.performance API as soon as DOMContentLoaded event is fired.
 

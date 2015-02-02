@@ -204,6 +204,9 @@ module WeppyImpl {
 
 	function sendQueue() {
 		clearSchedule();
+		if (queue.empty()) {
+			return;
+		}
 		if (!active) {
 			log("Weppy: would send queue but inactive");
 			return;
@@ -296,6 +299,10 @@ module WeppyImpl {
 
 		store(name:string, value:number, annotations?:WeppyContext) {
 			this.send(MetricType.Gauge, name, value, annotations);
+		}
+
+		flush() {
+			sendQueue();
 		}
 
 		setOptions(opts:WeppySettings) {

@@ -4,6 +4,7 @@ interface WeppyNamespace {
 	into(subpath:string): WeppyNamespace;
 	count(name:string, value?:number, annotations?:WeppyContext): void;
 	store(name:string, value?:number, annotations?:WeppyContext): void;
+	flush(): void;
 	setOptions(options:WeppySettings): void;
 	sendPagePerformance(): boolean;
 }
