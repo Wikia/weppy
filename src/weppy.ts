@@ -30,25 +30,27 @@ module WeppyImpl {
 		now = () => {
 			return window.performance && window.performance.now ? window.performance.now() : +(new Date);
 		},
-		log:any = () => {
-			if (options.debug)
-				if (typeof options.debug == 'function')
+		log: any = () => {
+			if (options.debug) {
+				if (typeof options.debug == 'function') {
 					options.debug.apply(window, arguments);
-				else
+				} else {
 					window.console && window.console.log && window.console.log.apply
 						? window.console.log.apply(window.console, arguments) : void 0;
+				}
+			}
 		},
-		logError:any = () => {
+		logError: any = () => {
 			window.console && window.console.error && window.console.error.apply &&
 				window.console.error.apply(window.console,arguments);
 		};
 
-	function round(num:number, precision = options.decimalPrecision) {
+	function round(num:number, precision = options.decimalPrecision): number {
 		return Math.round(num * Math.pow(10, precision)) / Math.pow(10, precision)
 	}
 
 	function buildPath(path:string, subpath:string, glue:string = PATH_DELIMITER) {
-		return path + (path != '' && subpath != '' ? glue : '' ) + subpath;
+		return path + ( (path != '' && subpath != '') ? glue : '' ) + subpath;
 	}
 
 	function updateActive() {

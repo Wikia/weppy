@@ -16,11 +16,14 @@ define(["require", "exports"], function (require, exports) {
         }, initTime = +(new Date), queue, aggregationTimeout, maxTimeout, sentPerformanceData, now = function () {
             return window.performance && window.performance.now ? window.performance.now() : +(new Date);
         }, log = function () {
-            if (options.debug)
-                if (typeof options.debug == 'function')
+            if (options.debug) {
+                if (typeof options.debug == 'function') {
                     options.debug.apply(window, arguments);
-                else
+                }
+                else {
                     window.console && window.console.log && window.console.log.apply ? window.console.log.apply(window.console, arguments) : void 0;
+                }
+            }
         }, logError = function () {
             window.console && window.console.error && window.console.error.apply && window.console.error.apply(window.console, arguments);
         };
@@ -30,7 +33,7 @@ define(["require", "exports"], function (require, exports) {
         }
         function buildPath(path, subpath, glue) {
             if (glue === void 0) { glue = PATH_DELIMITER; }
-            return path + (path != '' && subpath != '' ? glue : '') + subpath;
+            return path + ((path != '' && subpath != '') ? glue : '') + subpath;
         }
         function updateActive() {
             active = options.active && Math.random() < options.sample;
