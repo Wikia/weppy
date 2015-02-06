@@ -39,8 +39,9 @@ define(["require", "exports"], function (require, exports) {
             active = options.active && Math.random() < options.sample;
         }
         function extend(first, second) {
+            var key;
             if (first && second) {
-                for (var key in second) {
+                for (key in second) {
                     if (second.hasOwnProperty(key)) {
                         first[key] = second[key];
                     }
@@ -95,21 +96,21 @@ define(["require", "exports"], function (require, exports) {
                 return data;
             };
             Queue.prototype.get_clear = function () {
-                var measurements = {};
+                var measurements = {}, value, measurement, names, data, annotated, i, k;
                 function addMeasurement(name, data, annotations) {
                     if (data) {
-                        var value = data.value;
+                        value = data.value;
                         if (data.rollingAverage) {
                             value = round(value);
                         }
-                        var measurement = [value];
+                        measurement = [value];
                         if (annotations) {
                             measurement.push(annotations);
                         }
                         measurements[name].push(measurement);
                     }
                 }
-                var names = Object.keys(this.all), data, annotated, i, k;
+                names = Object.keys(this.all);
                 for (i = 0; i < names.length; i++) {
                     measurements[names[i]] = [];
                     data = this.all[names[i]].data;
@@ -132,10 +133,11 @@ define(["require", "exports"], function (require, exports) {
         })();
         queue = new Queue();
         function enqueue(type, name, value, annotations) {
+            var rollingAverage;
             if (!active) {
                 return;
             }
-            var rollingAverage = type != 0 /* Counter */;
+            rollingAverage = type != 0 /* Counter */;
             queue.add(name, value, rollingAverage, annotations);
             scheduleSending();
         }
@@ -153,6 +155,7 @@ define(["require", "exports"], function (require, exports) {
             maxTimeout = null;
         }
         function sendQueue() {
+            var all_measurements, all_data;
             clearSchedule();
             if (queue.empty()) {
                 return;
@@ -165,8 +168,8 @@ define(["require", "exports"], function (require, exports) {
                 queue.clear();
                 return;
             }
-            var all_measurements = queue.get_clear();
-            var all_data = {
+            all_measurements = queue.get_clear();
+            all_data = {
                 context: options.context,
                 data: all_measurements
             };
@@ -174,11 +177,12 @@ define(["require", "exports"], function (require, exports) {
             sendData(all_data);
         }
         function sendData(data) {
+            var url;
             if (typeof options.transport == 'function') {
                 options.transport(data);
                 return;
             }
-            var url = options.host + '/v' + protocolVersion + '/send';
+            url = options.host + '/v' + protocolVersion + '/send';
             if (options.transport == 'url') {
                 url += '?p=' + encodeURIComponent(JSON.stringify(data));
                 sendRequest(url, null);
@@ -188,20 +192,18 @@ define(["require", "exports"], function (require, exports) {
             }
         }
         function sendRequest(url, data) {
-            var corsSupport = window.XMLHttpRequest && (XMLHttpRequest['defake'] || (new XMLHttpRequest()).withCredentials);
-            var sameOrigin = true;
-            var match = /^(https?:\/\/[^\/]+)/i.exec(url);
+            var corsSupport = window.XMLHttpRequest && (XMLHttpRequest['defake'] || (new XMLHttpRequest()).withCredentials), sameOrigin = true, match, req, contentType;
+            match = /^(https?:\/\/[^\/]+)/i.exec(url);
             if (match && match[1] != document.location.protocol + '//' + document.location.host) {
                 sameOrigin = false;
             }
-            var req;
             if (!sameOrigin && !corsSupport && window.XDomainRequest) {
                 req = new XDomainRequest();
             }
             else {
                 req = new XMLHttpRequest();
             }
-            var contentType = data == null ? 'text/plain' : 'application/json';
+            contentType = data == null ? 'text/plain' : 'application/json';
             req.weppy = req.bucky = { track: false };
             req.open('POST', url, true);
             req.setRequestHeader('Content-Type', contentType);
@@ -255,10 +257,12 @@ define(["require", "exports"], function (require, exports) {
                 }
             };
             Namespace.prototype.sendPagePerformance = function () {
+                var self, readyState, timing, start, key, time, data = {}, name;
                 if (!window.performance || !window.performance.timing || sentPerformanceData) {
                     return false;
                 }
-                var self = this, readyState = document.readyState;
+                self = this;
+                readyState = document.readyState;
                 if (readyState == 'uninitialized' || readyState == 'loading') {
                     if (document.addEventListener) {
                         document.addEventListener("DOMContentLoaded", function () {
@@ -268,7 +272,8 @@ define(["require", "exports"], function (require, exports) {
                     return false;
                 }
                 sentPerformanceData = true;
-                var timing = window.performance.timing, start = timing.navigationStart, key, time, data = {};
+                timing = window.performance.timing;
+                start = timing.navigationStart;
                 for (key in timing) {
                     time = timing[key];
                     if (time && typeof time == 'number') {
@@ -276,7 +281,7 @@ define(["require", "exports"], function (require, exports) {
                     }
                 }
                 delete data['navigationStart'];
-                var name = options.page;
+                name = options.page;
                 self.namespace('PAGELOAD').timer.send(name, start, data);
                 return true;
             };
@@ -296,11 +301,12 @@ define(["require", "exports"], function (require, exports) {
                 return new Timer(this, name);
             };
             NamespaceTimer.prototype.stop = function (name, annotations) {
+                var duration;
                 if (!this.PARTIALS[name]) {
                     logError("Timer " + name + " ended without having been started");
                     return;
                 }
-                var duration = now() - this.PARTIALS[name][0];
+                duration = now() - this.PARTIALS[name][0];
                 annotations = extend(annotations, this.PARTIALS[name][1]);
                 this.PARTIALS[name] = false;
                 this.send(name, duration, annotations);
@@ -313,17 +319,18 @@ define(["require", "exports"], function (require, exports) {
                 this.PARTIALS[name][1] = annotations;
             };
             NamespaceTimer.prototype.time = function (name, action, scope, args, annotations) {
-                this.start(name, annotations);
                 var self = this, done = function (annotations) {
                     self.stop(name, annotations);
                 };
+                this.start(name, annotations);
                 args = args ? args.slice(0) : [];
                 args.splice(0, 0, done);
                 return action.apply(scope, args);
             };
             NamespaceTimer.prototype.timeSync = function (name, action, scope, args, annotations) {
+                var ret;
                 this.start(name, annotations);
-                var ret = action.apply(scope, args);
+                ret = action.apply(scope, args);
                 this.stop(name);
                 return ret;
             };

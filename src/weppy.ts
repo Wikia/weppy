@@ -58,8 +58,9 @@ module WeppyImpl {
 	}
 
 	function extend (first: any, second: any) {
+		var key;
 		if (first && second) {
-			for (var key in second) {
+			for (key in second) {
 				if (second.hasOwnProperty(key)) {
 					first[key] = second[key];
 				}
@@ -142,15 +143,15 @@ module WeppyImpl {
 		}
 
 		get_clear () {
-			var measurements = {};
+			var measurements = {}, value, measurement, names, data, annotated, i, k;
 
 			function addMeasurement (name, data, annotations) {
 				if (data) {
-					var value = data.value;
+					value = data.value;
 					if (data.rollingAverage) {
 						value = round(value);
 					}
-					var measurement = [value];
+					measurement = [value];
 					if (annotations) {
 						measurement.push(annotations);
 					}
@@ -158,8 +159,7 @@ module WeppyImpl {
 				}
 			}
 
-			var names = Object.keys(this.all),
-				data, annotated, i, k;
+			names = Object.keys(this.all);
 			for (i = 0; i < names.length; i++) {
 				measurements[names[i]] = [];
 				data = this.all[names[i]].data;
@@ -182,10 +182,11 @@ module WeppyImpl {
 	queue = new Queue();
 
 	function enqueue (type: MetricType, name: string, value: number, annotations?) {
+		var rollingAverage;
 		if (!active) {
 			return;
 		}
-		var rollingAverage = type != MetricType.Counter;
+		rollingAverage = type != MetricType.Counter;
 		queue.add(name, value, rollingAverage, annotations);
 		scheduleSending();
 	}
@@ -207,6 +208,7 @@ module WeppyImpl {
 
 
 	function sendQueue () {
+		var all_measurements, all_data;
 		clearSchedule();
 		if (queue.empty()) {
 			return;
@@ -219,8 +221,8 @@ module WeppyImpl {
 			queue.clear();
 			return;
 		}
-		var all_measurements = queue.get_clear();
-		var all_data = {
+		all_measurements = queue.get_clear();
+		all_data = {
 			context: options.context,
 			data: all_measurements
 		};
@@ -229,11 +231,12 @@ module WeppyImpl {
 	}
 
 	function sendData (data) {
+		var url;
 		if (typeof options.transport == 'function') {
 			options.transport(data);
 			return;
 		}
-		var url = options.host + '/v' + protocolVersion + '/send';
+		url = options.host + '/v' + protocolVersion + '/send';
 		if (options.transport == 'url') {
 			url += '?p=' + encodeURIComponent(JSON.stringify(data));
 			sendRequest(url, null);
@@ -243,22 +246,21 @@ module WeppyImpl {
 	}
 
 	function sendRequest (url, data) {
-		var corsSupport = window.XMLHttpRequest && (XMLHttpRequest['defake'] || (new XMLHttpRequest()).withCredentials);
-		var sameOrigin = true;
+		var corsSupport = window.XMLHttpRequest && (XMLHttpRequest['defake'] || (new XMLHttpRequest()).withCredentials),
+			sameOrigin = true, match, req, contentType;
 
-		var match = /^(https?:\/\/[^\/]+)/i.exec(url);
+		match = /^(https?:\/\/[^\/]+)/i.exec(url);
 		if (match && match[1] != document.location.protocol + '//' + document.location.host) {
 			sameOrigin = false;
 		}
 
-		var req;
 		if (!sameOrigin && !corsSupport && window.XDomainRequest) {
 			req = new XDomainRequest();
 		} else {
 			req = new XMLHttpRequest();
 		}
 
-		var contentType = data == null ? 'text/plain' : 'application/json';
+		contentType = data == null ? 'text/plain' : 'application/json';
 
 		req.weppy = req.bucky = {track: false};
 		req.open('POST', url, true);
@@ -322,11 +324,13 @@ module WeppyImpl {
 		}
 
 		sendPagePerformance () {
+			var self, readyState, timing, start, key, time, data: WeppyContext = {}, name;
 			if (!window.performance || !window.performance.timing || sentPerformanceData) {
 				return false;
 			}
 
-			var self = this, readyState = document.readyState;
+			self = this;
+			readyState = document.readyState;
 			if (readyState == 'uninitialized' || readyState == 'loading') {
 				if (document.addEventListener) {
 					document.addEventListener("DOMContentLoaded", () => {
@@ -337,8 +341,8 @@ module WeppyImpl {
 			}
 
 			sentPerformanceData = true;
-			var timing = window.performance.timing, start = timing.navigationStart, key, time,
-				data: WeppyContext = {};
+			timing = window.performance.timing;
+			start = timing.navigationStart;
 			for (key in timing) {
 				time = timing[key];
 				if (time && typeof time == 'number') {
@@ -347,7 +351,7 @@ module WeppyImpl {
 			}
 			delete data['navigationStart'];
 
-			var name = options.page;
+			name = options.page;
 			self.namespace('PAGELOAD').timer.send(name, start, data);
 
 			return true
@@ -371,11 +375,12 @@ module WeppyImpl {
 		}
 
 		stop (name: string, annotations?: WeppyContext) {
+			var duration;
 			if (!this.PARTIALS[name]) {
 				logError("Timer " + name + " ended without having been started");
 				return;
 			}
-			var duration = now() - this.PARTIALS[name][0];
+			duration = now() - this.PARTIALS[name][0];
 			annotations = extend(annotations, this.PARTIALS[name][1]);
 			this.PARTIALS[name] = false;
 			this.send(name, duration, annotations);
@@ -390,19 +395,20 @@ module WeppyImpl {
 		}
 
 		time (name: string, action, scope, args, annotations?: WeppyContext) {
-			this.start(name, annotations);
 			var self = this,
 				done = (annotations?) => {
 					self.stop(name, annotations);
 				};
+			this.start(name, annotations);
 			args = args ? args.slice(0) : [];
 			args.splice(0, 0, done);
 			return action.apply(scope, args);
 		}
 
 		timeSync (name: string, action, scope, args, annotations?: WeppyContext) {
+			var ret;
 			this.start(name, annotations);
-			var ret = action.apply(scope, args);
+			ret = action.apply(scope, args);
 			this.stop(name);
 			return ret;
 		}
