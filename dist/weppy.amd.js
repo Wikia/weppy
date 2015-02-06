@@ -2,7 +2,7 @@
 define(["require", "exports"], function (require, exports) {
     var WeppyImpl;
     (function (WeppyImpl) {
-        var PROTOCOL_VERSION = 3, PATH_DELIMITER = '.', NAMESPACE_DELIMITER = '::', active = false, options = {
+        var protocolVersion = 3, pathDelimiter = '.', namespaceDelimiter = '::', active = false, options = {
             "host": '/weppy',
             "transport": 'url',
             "active": true,
@@ -32,7 +32,7 @@ define(["require", "exports"], function (require, exports) {
             return Math.round(num * Math.pow(10, precision)) / Math.pow(10, precision);
         }
         function buildPath(path, subpath, glue) {
-            if (glue === void 0) { glue = PATH_DELIMITER; }
+            if (glue === void 0) { glue = pathDelimiter; }
             return path + ((path != '' && subpath != '') ? glue : '') + subpath;
         }
         function updateActive() {
@@ -178,7 +178,7 @@ define(["require", "exports"], function (require, exports) {
                 options.transport(data);
                 return;
             }
-            var url = options.host + '/v' + PROTOCOL_VERSION + '/send';
+            var url = options.host + '/v' + protocolVersion + '/send';
             if (options.transport == 'url') {
                 url += '?p=' + encodeURIComponent(JSON.stringify(data));
                 sendRequest(url, null);
@@ -221,7 +221,7 @@ define(["require", "exports"], function (require, exports) {
                 return new Namespace(this._root, buildPath(this._path, subpath));
             };
             Namespace.prototype.key = function (name) {
-                return buildPath(this._root, buildPath(this._path, name), NAMESPACE_DELIMITER);
+                return buildPath(this._root, buildPath(this._path, name), namespaceDelimiter);
             };
             Namespace.prototype.send = function (type, name, value, annotations) {
                 name = this.key(name);

@@ -9,11 +9,11 @@ interface Window {
 
 module WeppyImpl {
 
-	var PROTOCOL_VERSION = 3,
-		PATH_DELIMITER = '.',
-		NAMESPACE_DELIMITER = '::',
+	var protocolVersion = 3,
+		pathDelimiter = '.',
+		namespaceDelimiter = '::',
 		active = false,
-		options:WeppySettings = {
+		options: WeppySettings = {
 			"host": '/weppy',
 			"transport": 'url', // 'url' or 'post'
 			"active": true,
@@ -42,22 +42,22 @@ module WeppyImpl {
 		},
 		logError: any = () => {
 			window.console && window.console.error && window.console.error.apply &&
-				window.console.error.apply(window.console,arguments);
+				window.console.error.apply(window.console, arguments);
 		};
 
-	function round(num:number, precision = options.decimalPrecision): number {
+	function round (num: number, precision = options.decimalPrecision): number {
 		return Math.round(num * Math.pow(10, precision)) / Math.pow(10, precision)
 	}
 
-	function buildPath(path:string, subpath:string, glue:string = PATH_DELIMITER) {
+	function buildPath (path: string, subpath: string, glue: string = pathDelimiter) {
 		return path + ( (path != '' && subpath != '') ? glue : '' ) + subpath;
 	}
 
-	function updateActive() {
+	function updateActive () {
 		active = options.active && Math.random() < options.sample;
 	}
 
-	function extend(first:any, second:any) {
+	function extend (first: any, second: any) {
 		if (first && second) {
 			for (var key in second) {
 				if (second.hasOwnProperty(key)) {
@@ -68,7 +68,7 @@ module WeppyImpl {
 		return first || second;
 	}
 
-	function sortedJson(obj) {
+	function sortedJson (obj) {
 		var keys = Object.keys(obj).sort(),
 			i, ret = {};
 		for (i = 0; i < keys.length; i++) {
@@ -101,24 +101,24 @@ module WeppyImpl {
 		}
 	}
 	class Queue {
-		private all:QueueData.Root;
-		private _empty:boolean;
+		private all: QueueData.Root;
+		private _empty: boolean;
 
-		constructor() {
+		constructor () {
 			this.clear();
 		}
 
-		clear() {
+		clear () {
 			this.all = {};
 			this._empty = true;
 		}
 
-		empty() {
+		empty () {
 			return this._empty;
 		}
 
-		add(name:string, value:number, rollingAverage:boolean, annotations?) {
-			var data:QueueData.Data = this.find(name, annotations);
+		add (name: string, value: number, rollingAverage: boolean, annotations?) {
+			var data: QueueData.Data = this.find(name, annotations);
 			if (rollingAverage) {
 				data.count = data.count || 0;
 				data.count++;
@@ -130,9 +130,9 @@ module WeppyImpl {
 			this._empty = false;
 		}
 
-		private find(name:string, annotations?):QueueData.Data {
-			var serializedAnnotations:any = annotations ? sortedJson(annotations) : false,
-				scope = this.all[name] = this.all[name] || {}, data:QueueData.Data;
+		private find (name: string, annotations?): QueueData.Data {
+			var serializedAnnotations: any = annotations ? sortedJson(annotations) : false,
+				scope = this.all[name] = this.all[name] || {}, data: QueueData.Data;
 			if (serializedAnnotations) {
 				scope = scope.annotated = scope.annotated || {};
 				scope = scope[serializedAnnotations] = scope[serializedAnnotations] || {};
@@ -141,10 +141,10 @@ module WeppyImpl {
 			return data;
 		}
 
-		get_clear() {
+		get_clear () {
 			var measurements = {};
 
-			function addMeasurement(name, data, annotations) {
+			function addMeasurement (name, data, annotations) {
 				if (data) {
 					var value = data.value;
 					if (data.rollingAverage) {
@@ -181,7 +181,7 @@ module WeppyImpl {
 	}
 	queue = new Queue();
 
-	function enqueue(type:MetricType, name:string, value:number, annotations?) {
+	function enqueue (type: MetricType, name: string, value: number, annotations?) {
 		if (!active) {
 			return;
 		}
@@ -190,7 +190,7 @@ module WeppyImpl {
 		scheduleSending();
 	}
 
-	function scheduleSending() {
+	function scheduleSending () {
 		clearTimeout(aggregationTimeout);
 		aggregationTimeout = setTimeout(sendQueue, options.aggregationInterval);
 		if (!maxTimeout) {
@@ -198,7 +198,7 @@ module WeppyImpl {
 		}
 	}
 
-	function clearSchedule() {
+	function clearSchedule () {
 		clearTimeout(aggregationTimeout);
 		clearTimeout(maxTimeout);
 		aggregationTimeout = null;
@@ -206,7 +206,7 @@ module WeppyImpl {
 	}
 
 
-	function sendQueue() {
+	function sendQueue () {
 		clearSchedule();
 		if (queue.empty()) {
 			return;
@@ -228,12 +228,12 @@ module WeppyImpl {
 		sendData(all_data);
 	}
 
-	function sendData(data) {
+	function sendData (data) {
 		if (typeof options.transport == 'function') {
 			options.transport(data);
 			return;
 		}
-		var url = options.host + '/v' + PROTOCOL_VERSION + '/send';
+		var url = options.host + '/v' + protocolVersion + '/send';
 		if (options.transport == 'url') {
 			url += '?p=' + encodeURIComponent(JSON.stringify(data));
 			sendRequest(url, null);
@@ -242,7 +242,7 @@ module WeppyImpl {
 		}
 	}
 
-	function sendRequest(url, data) {
+	function sendRequest (url, data) {
 		var corsSupport = window.XMLHttpRequest && (XMLHttpRequest['defake'] || (new XMLHttpRequest()).withCredentials);
 		var sameOrigin = true;
 
@@ -268,25 +268,25 @@ module WeppyImpl {
 	}
 
 	export class Namespace implements WeppyNamespace {
-		public timer:NamespaceTimer;
+		public timer: NamespaceTimer;
 
-		constructor(private _root:string, private _path:string) {
+		constructor (private _root: string, private _path: string) {
 			this.timer = new NamespaceTimer(this);
 		}
 
-		namespace(root:string, path?:string) {
+		namespace (root: string, path?: string) {
 			return new Namespace(root, path || '');
 		}
 
-		into(subpath:string) {
+		into (subpath: string) {
 			return new Namespace(this._root, buildPath(this._path, subpath))
 		}
 
-		private key(name:string) {
-			return buildPath(this._root, buildPath(this._path, name), NAMESPACE_DELIMITER);
+		private key (name: string) {
+			return buildPath(this._root, buildPath(this._path, name), namespaceDelimiter);
 		}
 
-		send(type:MetricType, name:string, value:number, annotations?:WeppyContext) {
+		send (type: MetricType, name: string, value: number, annotations?: WeppyContext) {
 			name = this.key(name);
 			enqueue(type, name, value, annotations);
 			log('Weppy: queued', {
@@ -297,19 +297,19 @@ module WeppyImpl {
 			});
 		}
 
-		count(name:string, value:number = 1, annotations?:WeppyContext) {
+		count (name: string, value: number = 1, annotations?: WeppyContext) {
 			this.send(MetricType.Counter, name, value, annotations);
 		}
 
-		store(name:string, value:number, annotations?:WeppyContext) {
+		store (name: string, value: number, annotations?: WeppyContext) {
 			this.send(MetricType.Gauge, name, value, annotations);
 		}
 
-		flush() {
+		flush () {
 			sendQueue();
 		}
 
-		setOptions(opts:WeppySettings) {
+		setOptions (opts: WeppySettings) {
 			var key;
 			for (key in opts) {
 				if (opts.hasOwnProperty(key)) {
@@ -321,7 +321,7 @@ module WeppyImpl {
 			}
 		}
 
-		sendPagePerformance() {
+		sendPagePerformance () {
 			if (!window.performance || !window.performance.timing || sentPerformanceData) {
 				return false;
 			}
@@ -338,7 +338,7 @@ module WeppyImpl {
 
 			sentPerformanceData = true;
 			var timing = window.performance.timing, start = timing.navigationStart, key, time,
-				data:WeppyContext = {};
+				data: WeppyContext = {};
 			for (key in timing) {
 				time = timing[key];
 				if (time && typeof time == 'number') {
@@ -357,20 +357,20 @@ module WeppyImpl {
 	export class NamespaceTimer implements WeppyNamespaceTimer {
 		private PARTIALS;
 
-		constructor(private _namespace:Namespace) {
+		constructor (private _namespace: Namespace) {
 			this.PARTIALS = {}
 		}
 
-		send(name:string, duration:number, annotations?:WeppyContext) {
+		send (name: string, duration: number, annotations?: WeppyContext) {
 			this._namespace.send(MetricType.Timer, name, duration, annotations);
 		}
 
-		start(name:string, annotations?:WeppyContext) {
+		start (name: string, annotations?: WeppyContext) {
 			this.PARTIALS[name] = [now(), annotations];
 			return new Timer(this, name);
 		}
 
-		stop(name:string, annotations?:WeppyContext) {
+		stop (name: string, annotations?: WeppyContext) {
 			if (!this.PARTIALS[name]) {
 				logError("Timer " + name + " ended without having been started");
 				return;
@@ -381,7 +381,7 @@ module WeppyImpl {
 			this.send(name, duration, annotations);
 		}
 
-		annotate(name:string, annotations:WeppyContext) {
+		annotate (name: string, annotations: WeppyContext) {
 			if (!this.PARTIALS[name]) {
 				logError("Timer " + name + " received annotation without having been started");
 				return;
@@ -389,7 +389,7 @@ module WeppyImpl {
 			this.PARTIALS[name][1] = annotations;
 		}
 
-		time(name:string, action, scope, args, annotations?:WeppyContext) {
+		time (name: string, action, scope, args, annotations?: WeppyContext) {
 			this.start(name, annotations);
 			var self = this,
 				done = (annotations?) => {
@@ -400,60 +400,60 @@ module WeppyImpl {
 			return action.apply(scope, args);
 		}
 
-		timeSync(name:string, action, scope, args, annotations?:WeppyContext) {
+		timeSync (name: string, action, scope, args, annotations?: WeppyContext) {
 			this.start(name, annotations);
 			var ret = action.apply(scope, args);
 			this.stop(name);
 			return ret;
 		}
 
-		wrap(name:string, action, scope, annotations?:WeppyContext) {
+		wrap (name: string, action, scope, annotations?: WeppyContext) {
 			var self = this;
 			return () => {
 				return self.timeSync(name, action, scope || this, arguments, annotations);
 			};
 		}
 
-		mark(name:string, annotations?:WeppyContext) {
+		mark (name: string, annotations?: WeppyContext) {
 			this.send(name, now() - this.navigationStart(), annotations);
 		}
 
-		private navigationStart() {
+		private navigationStart () {
 			return (window.performance && window.performance.timing && window.performance.timing.navigationStart) ||
 				initTime;
 		}
 	}
 
 	export class Timer implements WeppyTimer {
-		constructor(private _timer:NamespaceTimer, private name:string) {
+		constructor (private _timer: NamespaceTimer, private name: string) {
 		}
 
-		stop(annotations?) {
+		stop (annotations?) {
 			this._timer.stop(this.name, annotations);
 		}
 
-		annotate(annotations) {
+		annotate (annotations) {
 			this._timer.annotate(this.name, annotations);
 		}
 	}
 
-	function bindNamespaceFunction( fn, scope, callWrapNamespace ) {
+	function bindNamespaceFunction (fn, scope, callWrapNamespace) {
 		return callWrapNamespace ?
 			() => {
-				return wrapNamespaceObject(fn.apply(scope,arguments));
+				return wrapNamespaceObject(fn.apply(scope, arguments));
 			} :
 			() => {
-				return fn.apply(scope,arguments);
+				return fn.apply(scope, arguments);
 			}
 	}
 
-	function wrapNamespaceObject( obj: WeppyNamespace ) {
-		var weppyObject: WeppyObject = <WeppyObject>((subpath:string) => {
-				return subpath ? weppyObject.into(subpath) : weppyObject;
-			}), k;
+	function wrapNamespaceObject (obj: WeppyNamespace) {
+		var weppyObject: WeppyObject = <WeppyObject>((subpath: string) => {
+			return subpath ? weppyObject.into(subpath) : weppyObject;
+		}), k;
 		for (k in obj) {
-			if ( typeof obj[k] == 'function' ) {
-				weppyObject[k] = bindNamespaceFunction(obj[k],obj,
+			if (typeof obj[k] == 'function') {
+				weppyObject[k] = bindNamespaceFunction(obj[k], obj,
 					k == 'into' || k == 'namespace');
 			} else {
 				weppyObject[k] = obj[k];
@@ -462,10 +462,11 @@ module WeppyImpl {
 		return weppyObject;
 	}
 
-	export function getRootObject() {
-		return wrapNamespaceObject(new Namespace('',''));
+	export function getRootObject () {
+		return wrapNamespaceObject(new Namespace('', ''));
 	}
+
 	updateActive();
 }
 
-var Weppy:WeppyNamespace = WeppyImpl.getRootObject();
+var Weppy: WeppyNamespace = WeppyImpl.getRootObject();
