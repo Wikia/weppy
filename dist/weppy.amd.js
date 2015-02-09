@@ -17,7 +17,7 @@ define(["require", "exports"], function (require, exports) {
             return window.performance && window.performance.now ? window.performance.now() : +(new Date);
         }, log = function () {
             if (options.debug) {
-                if (typeof options.debug == 'function') {
+                if (typeof options.debug === 'function') {
                     options.debug.apply(window, arguments);
                 }
                 else {
@@ -95,7 +95,7 @@ define(["require", "exports"], function (require, exports) {
                 data = scope.data = scope.data || { value: 0 };
                 return data;
             };
-            Queue.prototype.get_clear = function () {
+            Queue.prototype.get = function () {
                 var measurements = {}, value, measurement, names, data, annotated, i, k;
                 function addMeasurement(name, data, annotations) {
                     if (data) {
@@ -126,7 +126,6 @@ define(["require", "exports"], function (require, exports) {
                         }
                     }
                 }
-                this.clear();
                 return measurements;
             };
             return Queue;
@@ -155,7 +154,7 @@ define(["require", "exports"], function (require, exports) {
             maxTimeout = null;
         }
         function sendQueue() {
-            var all_measurements, all_data;
+            var allMeasurements, allData;
             clearSchedule();
             if (queue.empty()) {
                 return;
@@ -168,13 +167,14 @@ define(["require", "exports"], function (require, exports) {
                 queue.clear();
                 return;
             }
-            all_measurements = queue.get_clear();
-            all_data = {
+            allMeasurements = queue.get();
+            queue.clear();
+            allData = {
                 context: options.context,
-                data: all_measurements
+                data: allMeasurements
             };
-            log('Weppy: sending', all_data);
-            sendData(all_data);
+            log('Weppy: sending', allData);
+            sendData(allData);
         }
         function sendData(data) {
             var url;

@@ -32,7 +32,7 @@ module WeppyImpl {
 		},
 		log: any = () => {
 			if (options.debug) {
-				if (typeof options.debug == 'function') {
+				if (typeof options.debug === 'function') {
 					options.debug.apply(window, arguments);
 				} else {
 					window.console && window.console.log && window.console.log.apply
@@ -142,7 +142,7 @@ module WeppyImpl {
 			return data;
 		}
 
-		get_clear () {
+		get () {
 			var measurements = {}, value, measurement, names, data, annotated, i, k;
 
 			function addMeasurement (name, data, annotations) {
@@ -175,7 +175,6 @@ module WeppyImpl {
 					}
 				}
 			}
-			this.clear();
 			return measurements;
 		}
 	}
@@ -208,7 +207,7 @@ module WeppyImpl {
 
 
 	function sendQueue () {
-		var all_measurements, all_data;
+		var allMeasurements, allData;
 		clearSchedule();
 		if (queue.empty()) {
 			return;
@@ -221,13 +220,14 @@ module WeppyImpl {
 			queue.clear();
 			return;
 		}
-		all_measurements = queue.get_clear();
-		all_data = {
+		allMeasurements = queue.get();
+		queue.clear();
+		allData = {
 			context: options.context,
-			data: all_measurements
+			data: allMeasurements
 		};
-		log('Weppy: sending', all_data);
-		sendData(all_data);
+		log('Weppy: sending', allData);
+		sendData(allData);
 	}
 
 	function sendData (data) {
