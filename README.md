@@ -12,7 +12,7 @@ for more details.
 Example
 -------
 
-You can get the following data reported to the server:
+You can report the following to the server:
 ```json
 {
 	"context": {
