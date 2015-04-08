@@ -243,3 +243,10 @@ Features not present in Bucky:
 Features not supported by Weppy:
 - requests
 - timer.stopwatch()
+
+Known Issues
+------------
+
+- built-in "url" transport which puts the payload into GET parameter does not check for any URL length limit, that
+  might cause your data will not be correctly reported if you queue too many measurements without issuing [.flush()](#weppyflush)
+  manually
