@@ -28,7 +28,7 @@ module WeppyImpl {
 		initTime = +(new Date),
 		queue, aggregationTimeout, maxTimeout, sentPerformanceData,
 		now = () => {
-			return window.performance && window.performance.now ? window.performance.now() : +(new Date);
+			return +(new Date);
 		},
 		log: any = () => {
 			if (options.debug) {

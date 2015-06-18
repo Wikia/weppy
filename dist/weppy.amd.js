@@ -14,7 +14,7 @@ define(["require", "exports"], function (require, exports) {
             "context": {},
             "debug": false
         }, initTime = +(new Date), queue, aggregationTimeout, maxTimeout, sentPerformanceData, now = function () {
-            return window.performance && window.performance.now ? window.performance.now() : +(new Date);
+            return +(new Date);
         }, log = function () {
             if (options.debug) {
                 if (typeof options.debug === 'function') {
