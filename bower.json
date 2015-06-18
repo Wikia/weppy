@@ -1,6 +1,6 @@
 {
 	"name": "weppy",
-	"version": "0.9.0",
+	"version": "0.9.1",
 	"main": [
 		"/dist/weppy.amd.js",
 		"/dist/weppy.cjs.js",
