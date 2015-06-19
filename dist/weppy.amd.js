@@ -13,8 +13,8 @@ define(["require", "exports"], function (require, exports) {
             "page": 'index',
             "context": {},
             "debug": false
-        }, initTime = +(new Date), queue, aggregationTimeout, maxTimeout, sentPerformanceData, now = function () {
-            return +(new Date);
+        }, initTime = +(new Date), queue, aggregationTimeout, maxTimeout, sentPerformanceData, timestamp = function () {
+            return (window.performance && window.performance.now) ? window.performance.now() : (+(new Date) - initTime);
         }, log = function () {
             if (options.debug) {
                 if (typeof options.debug === 'function') {
@@ -297,7 +297,7 @@ define(["require", "exports"], function (require, exports) {
                 this._namespace.send(2 /* Timer */, name, duration, annotations);
             };
             NamespaceTimer.prototype.start = function (name, annotations) {
-                this.PARTIALS[name] = [now(), annotations];
+                this.PARTIALS[name] = [timestamp(), annotations];
                 return new Timer(this, name);
             };
             NamespaceTimer.prototype.stop = function (name, annotations) {
@@ -306,7 +306,7 @@ define(["require", "exports"], function (require, exports) {
                     logError("Timer " + name + " ended without having been started");
                     return;
                 }
-                duration = now() - this.PARTIALS[name][0];
+                duration = timestamp() - this.PARTIALS[name][0];
                 annotations = extend(annotations, this.PARTIALS[name][1]);
                 this.PARTIALS[name] = false;
                 this.send(name, duration, annotations);
@@ -335,17 +335,13 @@ define(["require", "exports"], function (require, exports) {
                 return ret;
             };
             NamespaceTimer.prototype.wrap = function (name, action, scope, annotations) {
-                var _this = this;
                 var self = this;
                 return function () {
-                    return self.timeSync(name, action, scope || _this, arguments, annotations);
+                    return self.timeSync(name, action, scope || this, arguments, annotations);
                 };
             };
             NamespaceTimer.prototype.mark = function (name, annotations) {
-                this.send(name, now() - this.navigationStart(), annotations);
-            };
-            NamespaceTimer.prototype.navigationStart = function () {
-                return (window.performance && window.performance.timing && window.performance.timing.navigationStart) || initTime;
+                this.send(name, timestamp(), annotations);
             };
             return NamespaceTimer;
         })();

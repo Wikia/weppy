@@ -27,10 +27,11 @@ module WeppyImpl {
 		},
 		initTime = +(new Date),
 		queue, aggregationTimeout, maxTimeout, sentPerformanceData,
-		now = () => {
-			return +(new Date);
+		timestamp = () => {
+			return (window.performance && window.performance.now)
+				? window.performance.now() : (+(new Date) - initTime);
 		},
-		log: any = () => {
+		log: any = function() {
 			if (options.debug) {
 				if (typeof options.debug === 'function') {
 					options.debug.apply(window, arguments);
@@ -40,7 +41,7 @@ module WeppyImpl {
 				}
 			}
 		},
-		logError: any = () => {
+		logError: any = function() {
 			window.console && window.console.error && window.console.error.apply &&
 				window.console.error.apply(window.console, arguments);
 		};
@@ -370,7 +371,7 @@ module WeppyImpl {
 		}
 
 		start (name: string, annotations?: WeppyContext) {
-			this.PARTIALS[name] = [now(), annotations];
+			this.PARTIALS[name] = [timestamp(), annotations];
 			return new Timer(this, name);
 		}
 
@@ -380,7 +381,7 @@ module WeppyImpl {
 				logError("Timer " + name + " ended without having been started");
 				return;
 			}
-			duration = now() - this.PARTIALS[name][0];
+			duration = timestamp() - this.PARTIALS[name][0];
 			annotations = extend(annotations, this.PARTIALS[name][1]);
 			this.PARTIALS[name] = false;
 			this.send(name, duration, annotations);
@@ -415,19 +416,15 @@ module WeppyImpl {
 
 		wrap (name: string, action, scope, annotations?: WeppyContext) {
 			var self = this;
-			return () => {
+			return function() {
 				return self.timeSync(name, action, scope || this, arguments, annotations);
 			};
 		}
 
 		mark (name: string, annotations?: WeppyContext) {
-			this.send(name, now() - this.navigationStart(), annotations);
+			this.send(name, timestamp(), annotations);
 		}
 
-		private navigationStart () {
-			return (window.performance && window.performance.timing && window.performance.timing.navigationStart) ||
-				initTime;
-		}
 	}
 
 	export class Timer implements WeppyTimer {
@@ -445,10 +442,10 @@ module WeppyImpl {
 
 	function bindNamespaceFunction (fn, scope, callWrapNamespace) {
 		return callWrapNamespace ?
-			() => {
+			function() {
 				return wrapNamespaceObject(fn.apply(scope, arguments));
 			} :
-			() => {
+			function() {
 				return fn.apply(scope, arguments);
 			}
 	}
