@@ -16,6 +16,6 @@
 		"gulp-typescript": "2.x.x",
 		"gulp-wrap": "0.5.x",
 		"gulp-qunit": "1.2.x",
-		"qunit-js": "1.16.x"
+		"qunitjs": "1.16.x"
 	}
 }

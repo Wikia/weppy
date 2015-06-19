@@ -30,7 +30,7 @@ for (var k in _console) {
 		consoleMock[k] = (function (k) {
 			return function () {
 				consoleCalls[k] = consoleCalls[k] || [];
-				consoleCalls[k].push(Array.prototype.slice.apply(arguments, [0]));
+				consoleCalls[k].push(Array.prototype.slice.call(arguments, 0));
 				return _console[k].apply(_console, arguments);
 			}
 		})(k);
@@ -232,6 +232,19 @@ QUnit.test('Report annotated points separately', function () {
 					[1.3, {size: 100}]
 				]
 			});
+		}
+	})
+});
+
+QUnit.test('Report .mark() calls with correct timestamp', function () {
+	runWeppyReportTest({
+		setup: function () {
+			Weppy.timer.mark('axyz');
+		},
+		check: function (data) {
+			var reportedTime = data['data']['axyz'][0][0];
+			// assuming running all tests till here does not take more than 10s
+			ok(reportedTime >= 0 && reportedTime < 10000, 'time not in range <0,10000> ms')
 		}
 	})
 });
