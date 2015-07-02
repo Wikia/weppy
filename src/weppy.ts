@@ -27,7 +27,7 @@ module WeppyImpl {
 		},
 		initTime = +(new Date),
 		queue, aggregationTimeout, maxTimeout, sentPerformanceData,
-		timeSinceInit = () => {
+		timestamp = () => {
 			return (window.performance && window.performance.now)
 				? window.performance.now() : (+(new Date) - initTime);
 		},
@@ -371,7 +371,7 @@ module WeppyImpl {
 		}
 
 		start (name: string, annotations?: WeppyContext) {
-			this.PARTIALS[name] = [timeSinceInit(), annotations];
+			this.PARTIALS[name] = [timestamp(), annotations];
 			return new Timer(this, name);
 		}
 
@@ -381,7 +381,7 @@ module WeppyImpl {
 				logError("Timer " + name + " ended without having been started");
 				return;
 			}
-			duration = timeSinceInit() - this.PARTIALS[name][0];
+			duration = timestamp() - this.PARTIALS[name][0];
 			annotations = extend(annotations, this.PARTIALS[name][1]);
 			this.PARTIALS[name] = false;
 			this.send(name, duration, annotations);
@@ -421,15 +421,8 @@ module WeppyImpl {
 			};
 		}
 
-		/**
-		 * Tracks time since timing.navigationStart if available, otherwise time since init of this script.
-		 */
 		mark (name: string, annotations?: WeppyContext) {
-			var time: number = (window.performance && window.performance.timing ) ?
-				window.performance.now() :
-				timeSinceInit();
-
-			this.send(name, time, annotations);
+			this.send(name, timestamp(), annotations);
 		}
 
 	}

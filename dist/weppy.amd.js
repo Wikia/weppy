@@ -13,7 +13,7 @@ define(["require", "exports"], function (require, exports) {
             "page": 'index',
             "context": {},
             "debug": false
-        }, initTime = +(new Date), queue, aggregationTimeout, maxTimeout, sentPerformanceData, timeSinceInit = function () {
+        }, initTime = +(new Date), queue, aggregationTimeout, maxTimeout, sentPerformanceData, timestamp = function () {
             return (window.performance && window.performance.now) ? window.performance.now() : (+(new Date) - initTime);
         }, log = function () {
             if (options.debug) {
@@ -297,7 +297,7 @@ define(["require", "exports"], function (require, exports) {
                 this._namespace.send(2 /* Timer */, name, duration, annotations);
             };
             NamespaceTimer.prototype.start = function (name, annotations) {
-                this.PARTIALS[name] = [timeSinceInit(), annotations];
+                this.PARTIALS[name] = [timestamp(), annotations];
                 return new Timer(this, name);
             };
             NamespaceTimer.prototype.stop = function (name, annotations) {
@@ -306,7 +306,7 @@ define(["require", "exports"], function (require, exports) {
                     logError("Timer " + name + " ended without having been started");
                     return;
                 }
-                duration = timeSinceInit() - this.PARTIALS[name][0];
+                duration = timestamp() - this.PARTIALS[name][0];
                 annotations = extend(annotations, this.PARTIALS[name][1]);
                 this.PARTIALS[name] = false;
                 this.send(name, duration, annotations);
@@ -340,12 +340,8 @@ define(["require", "exports"], function (require, exports) {
                     return self.timeSync(name, action, scope || this, arguments, annotations);
                 };
             };
-            /**
-             * Tracks time since timing.navigationStart if available, otherwise time since init of this script.
-             */
             NamespaceTimer.prototype.mark = function (name, annotations) {
-                var time = (window.performance && window.performance.timing) ? window.performance.now() : timeSinceInit();
-                this.send(name, time, annotations);
+                this.send(name, timestamp(), annotations);
             };
             return NamespaceTimer;
         })();
