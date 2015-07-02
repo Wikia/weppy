@@ -1,6 +1,6 @@
 {
 	"name": "weppy",
-	"version": "0.9.1",
+	"version": "0.9.2",
 	"description": "Library to collect and report web application performance metrics",
 	"repository": {
 		"type": "git",
