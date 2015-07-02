@@ -13,7 +13,7 @@ define(["require", "exports"], function (require, exports) {
             "page": 'index',
             "context": {},
             "debug": false
-        }, initTime = +(new Date), queue, aggregationTimeout, maxTimeout, sentPerformanceData, timestamp = function () {
+        }, initTime = (window.performance && window.performance.timing) ? window.performance.timing.navigationStart : +(new Date), queue, aggregationTimeout, maxTimeout, sentPerformanceData, timestamp = function () {
             return (window.performance && window.performance.now) ? window.performance.now() : (+(new Date) - initTime);
         }, log = function () {
             if (options.debug) {
