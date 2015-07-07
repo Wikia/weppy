@@ -25,13 +25,14 @@ module WeppyImpl {
 			"context": {},
 			"debug": false
 		},
-		initTime = +(new Date),
+		initTime = (window.performance && window.performance.timing)
+			? window.performance.timing.navigationStart : +(new Date),
 		queue, aggregationTimeout, maxTimeout, sentPerformanceData,
 		timestamp = () => {
 			return (window.performance && window.performance.now)
 				? window.performance.now() : (+(new Date) - initTime);
 		},
-		log: any = function() {
+		log: any = function () {
 			if (options.debug) {
 				if (typeof options.debug === 'function') {
 					options.debug.apply(window, arguments);
@@ -41,9 +42,9 @@ module WeppyImpl {
 				}
 			}
 		},
-		logError: any = function() {
+		logError: any = function () {
 			window.console && window.console.error && window.console.error.apply &&
-				window.console.error.apply(window.console, arguments);
+			window.console.error.apply(window.console, arguments);
 		};
 
 	function round (num: number, precision = options.decimalPrecision): number {
@@ -416,7 +417,7 @@ module WeppyImpl {
 
 		wrap (name: string, action, scope, annotations?: WeppyContext) {
 			var self = this;
-			return function() {
+			return function () {
 				return self.timeSync(name, action, scope || this, arguments, annotations);
 			};
 		}
@@ -442,10 +443,10 @@ module WeppyImpl {
 
 	function bindNamespaceFunction (fn, scope, callWrapNamespace) {
 		return callWrapNamespace ?
-			function() {
+			function () {
 				return wrapNamespaceObject(fn.apply(scope, arguments));
 			} :
-			function() {
+			function () {
 				return fn.apply(scope, arguments);
 			}
 	}
