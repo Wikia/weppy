@@ -12,7 +12,7 @@ var WeppyImpl;
         "page": 'index',
         "context": {},
         "debug": false
-    }, initTime = (window.performance && window.performance.timing) ? window.performance.timing.navigationStart : +(new Date), queue, aggregationTimeout, maxTimeout, sentPerformanceData, timestamp = function () {
+    }, initTime = +(new Date), queue, aggregationTimeout, maxTimeout, sentPerformanceData, timestamp = function () {
         return (window.performance && window.performance.now) ? window.performance.now() : (+(new Date) - initTime);
     }, log = function () {
         if (options.debug) {

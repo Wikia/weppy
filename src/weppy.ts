@@ -25,8 +25,7 @@ module WeppyImpl {
 			"context": {},
 			"debug": false
 		},
-		initTime = (window.performance && window.performance.timing)
-			? window.performance.timing.navigationStart : +(new Date),
+		initTime = +(new Date),
 		queue, aggregationTimeout, maxTimeout, sentPerformanceData,
 		timestamp = () => {
 			return (window.performance && window.performance.now)
